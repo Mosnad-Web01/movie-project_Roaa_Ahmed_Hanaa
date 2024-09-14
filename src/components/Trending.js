@@ -1,4 +1,3 @@
-// src/components/Trending.js
 "use client";
 import React, { useEffect, useState } from 'react';
 import { fetchFromTMDB } from '../lib/tmdbClient';
@@ -75,18 +74,18 @@ const Trending = () => {
 
   return (
     <div className="px-6 py-4 bg-white dark:bg-gray-900 text-black dark:text-white">
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-3xl font-bold">Trending</h2>
-        <div className="flex space-x-4">
+      <div className="flex flex-col sm:flex-row justify-between items-center mb-6">
+        <h2 className="text-2xl sm:text-3xl font-bold mb-4 sm:mb-0">Trending</h2>
+        <div className="flex space-x-2 sm:space-x-4">
           <button 
             onClick={() => setTimeRange('day')} 
-            className={`px-5 py-2.5 rounded-full ${timeRange === 'day' ? 'bg-gradient-to-r from-blue-500 to-green-500 text-white hover:bg-gradient-to-bl focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium' : 'bg-gray-700 border border-gray-700 text-gray-200'}`}
+            className={`px-4 py-2 rounded-full text-sm sm:text-base ${timeRange === 'day' ? 'bg-gradient-to-r from-blue-500 to-green-500 text-white hover:bg-gradient-to-bl focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium' : 'bg-gray-700 border border-gray-700 text-gray-200'}`}
           >
             Today
           </button>
           <button 
             onClick={() => setTimeRange('week')} 
-            className={`px-5 py-2.5 rounded-full ${timeRange === 'week' ? 'bg-gradient-to-r from-blue-500 to-green-500 text-white hover:bg-gradient-to-bl focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium' : 'bg-gray-700 border border-gray-700 text-gray-200'}`}
+            className={`px-4 py-2 rounded-full text-sm sm:text-base ${timeRange === 'week' ? 'bg-gradient-to-r from-blue-500 to-green-500 text-white hover:bg-gradient-to-bl focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium' : 'bg-gray-700 border border-gray-700 text-gray-200'}`}
           >
             This Week
           </button>
@@ -95,11 +94,11 @@ const Trending = () => {
 
       <div className="relative">
         <div className="overflow-x-auto scrollbar-hide">
-          <div className="flex space-x-6" style={{ width: trendingMovies.length * 300 }}>
+          <div className="flex space-x-4 min-w-full">
             {trendingMovies.map(movie => (
               <div 
                 key={movie.id} 
-                className="relative bg-white dark:bg-gray-800 text-black dark:text-white rounded-lg shadow-md overflow-hidden w-[300px] h-[450px]"
+                className="relative bg-white dark:bg-gray-800 text-black dark:text-white rounded-lg shadow-md overflow-hidden w-[300px] h-[450px] flex-shrink-0"
               >
                 <div className="relative">
                   <Link href={`/movies/${movie.id}`}>
@@ -115,7 +114,7 @@ const Trending = () => {
                 </div>
 
                 <div className="p-4">
-                  <h3 className="text-lg font-semibold">{movie.title}</h3>
+                  <h3 className="text-lg sm:text-xl font-semibold">{movie.title}</h3>
                   <p className="text-sm text-gray-600 dark:text-gray-400">{new Date(movie.release_date).toDateString()}</p>
                 </div>
 
@@ -127,16 +126,16 @@ const Trending = () => {
                   {dropdownVisible === movie.id && (
                     <div className="absolute right-0 mt-2 w-40 bg-white dark:bg-gray-800 rounded-lg shadow-lg z-10">
                       <ul>
-                        <li className="px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer flex items-center">
+                        <li className="px-3 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer flex items-center">
                           <FaList className="mr-2" /> Add to list
                         </li>
-                        <li className="px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer flex items-center">
+                        <li className="px-3 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer flex items-center">
                           <FaHeart className="mr-2" /> Favorite
                         </li>
-                        <li className="px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer flex items-center">
+                        <li className="px-3 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer flex items-center">
                           <FaEye className="mr-2" /> Watchlist
                         </li>
-                        <li className="px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer flex items-center">
+                        <li className="px-3 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer flex items-center">
                           <FaStar className="mr-2" /> Your rating
                         </li>
                       </ul>

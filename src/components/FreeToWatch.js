@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { fetchFromTMDB } from '../lib/tmdbClient';
 import { FaList, FaHeart, FaEye, FaStar } from 'react-icons/fa';
 import Link from 'next/link';
+import Image from 'next/image';
 
 const UserScore = ({ score }) => {
   const circleRadius = 20;
@@ -53,10 +54,9 @@ const FreeToWatch = () => {
         setContent(data.results);
       }
     };
-  
+
     fetchContent();
   }, [timeRange, filter]);
-  
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -78,19 +78,19 @@ const FreeToWatch = () => {
 
   return (
     <div className="px-6 py-4 bg-white dark:bg-gray-900 text-black dark:text-white">
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-3xl font-bold">Free to Watch</h2>
-          
-        <div className="flex space-x-4 mt-4">
-          <button 
-            onClick={() => setFilter('movie')} 
-            className={`px-5 py-2.5 rounded-full ${filter === 'movie' ? 'bg-gradient-to-r from-blue-500 to-green-500 text-white hover:bg-gradient-to-bl focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium' : 'bg-gray-700 border border-gray-700 text-gray-200'}`}
+      <div className="flex flex-col sm:flex-row justify-between items-center mb-6">
+        <h2 className="text-3xl font-bold mb-4 sm:mb-0">Free to Watch</h2>
+
+        <div className="flex flex-wrap gap-2 mt-4 sm:mt-0">
+          <button
+            onClick={() => setFilter('movie')}
+            className={`px-4 py-2 rounded-full ${filter === 'movie' ? 'bg-gradient-to-r from-blue-500 to-green-500 text-white hover:bg-gradient-to-bl focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium' : 'bg-gray-700 border border-gray-700 text-gray-200'}`}
           >
             Movies
           </button>
-          <button 
-            onClick={() => setFilter('tv')} 
-            className={`px-5 py-2.5 rounded-full ${filter === 'tv' ? 'bg-gradient-to-r from-blue-500 to-green-500 text-white hover:bg-gradient-to-bl focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium' : 'bg-gray-700 border border-gray-700 text-gray-200'}`}
+          <button
+            onClick={() => setFilter('tv')}
+            className={`px-4 py-2 rounded-full ${filter === 'tv' ? 'bg-gradient-to-r from-blue-500 to-green-500 text-white hover:bg-gradient-to-bl focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium' : 'bg-gray-700 border border-gray-700 text-gray-200'}`}
           >
             TV
           </button>
@@ -99,17 +99,19 @@ const FreeToWatch = () => {
 
       <div className="relative">
         <div className="overflow-x-auto scrollbar-hide">
-          <div className="flex space-x-6" style={{ width: content.length * 300 }}>
+          <div className="flex flex-nowrap space-x-4" style={{ width: content.length * 300 }}>
             {content.map(item => (
-              <div 
-                key={item.id} 
+              <div
+                key={item.id}
                 className="relative bg-white dark:bg-gray-800 text-black dark:text-white rounded-lg shadow-md overflow-hidden w-[300px] h-[450px]"
               >
                 <div className="relative">
-                <Link href={`/${item.media_type === 'movie' || item.title ? 'movies' : 'tv'}/${item.id}`}>  
-                    <img 
-                      src={`https://image.tmdb.org/t/p/w500${item.poster_path}`} 
-                      alt={item.title || item.name} 
+                  <Link href={`/${item.media_type === 'movie' || item.title ? 'movies' : 'tv'}/${item.id}`}>
+                    <Image
+                      src={`https://image.tmdb.org/t/p/w500${item.poster_path}`}
+                      alt={item.title || item.name}
+                      width={500}
+                      height={700}
                       className={`w-full h-[350px] object-cover ${dropdownVisible === item.id ? 'filter blur-sm' : ''}`}
                     />
                   </Link>
@@ -131,16 +133,16 @@ const FreeToWatch = () => {
                   {dropdownVisible === item.id && (
                     <div className="absolute right-0 mt-2 w-40 bg-white dark:bg-gray-800 rounded-lg shadow-lg z-10">
                       <ul>
-                        <li className="px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer flex items-center">
+                        <li className="px-3 py-1 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer flex items-center text-sm">
                           <FaList className="mr-2" /> Add to list
                         </li>
-                        <li className="px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer flex items-center">
+                        <li className="px-3 py-1 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer flex items-center text-sm">
                           <FaHeart className="mr-2" /> Favorite
                         </li>
-                        <li className="px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer flex items-center">
+                        <li className="px-3 py-1 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer flex items-center text-sm">
                           <FaEye className="mr-2" /> Watchlist
                         </li>
-                        <li className="px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer flex items-center">
+                        <li className="px-3 py-1 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer flex items-center text-sm">
                           <FaStar className="mr-2" /> Your rating
                         </li>
                       </ul>

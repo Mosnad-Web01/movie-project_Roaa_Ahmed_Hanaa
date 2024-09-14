@@ -1,7 +1,8 @@
 "use client";
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { useState, useEffect } from 'react';
 import Image from 'next/image';
+import { FaGithub, FaLinkedin } from 'react-icons/fa';
 
 const Footer = () => {
   const [buildInfo, setBuildInfo] = useState(null);
@@ -13,10 +14,10 @@ const Footer = () => {
   }, []);
 
   return (
-    <footer className="bg-blue-900 text-white py-6 text-center">
-      <div className="container mx-auto">
+    <footer className="bg-gray-900 dark:bg-gray-800 text-gray-200 dark:text-white py-6">
+      <div className="container mx-auto px-4">
+        {/* Logo Section */}
         <div className="flex flex-col items-center mb-6">
-          {/* استخدام الشعار */}
           <Link href="/">
             <Image
               src="/images/logo.svg"
@@ -27,10 +28,9 @@ const Footer = () => {
           </Link>
         </div>
 
-        {/* التخطيط الشبكي لعرض القوائم بجانب بعضها */}
-        <div className="grid grid-cols-1 sm:grid-cols-4 gap-8 text-left">
-          
-          {/* القائمة الأولى */}
+        {/* Navigation Sections */}
+        <div className="grid grid-cols-1 sm:grid-cols-4 gap-8 text-left mb-6">
+          {/* The Basics */}
           <div>
             <h4 className="font-bold mb-2">The Basics</h4>
             <ul className="space-y-1">
@@ -42,7 +42,7 @@ const Footer = () => {
             </ul>
           </div>
 
-          {/* القائمة الثانية */}
+          {/* Get Involved */}
           <div>
             <h4 className="font-bold mb-2">Get Involved</h4>
             <ul className="space-y-1">
@@ -53,7 +53,7 @@ const Footer = () => {
             </ul>
           </div>
 
-          {/* القائمة الثالثة */}
+          {/* Community */}
           <div>
             <h4 className="font-bold mb-2">Community</h4>
             <ul className="space-y-1">
@@ -64,7 +64,7 @@ const Footer = () => {
             </ul>
           </div>
 
-          {/* القائمة الرابعة */}
+          {/* Legal */}
           <div>
             <h4 className="font-bold mb-2">Legal</h4>
             <ul className="space-y-1">
@@ -75,11 +75,36 @@ const Footer = () => {
               <li><Link href="/dmca-policy" className="hover:underline">DMCA Policy</Link></li>
             </ul>
           </div>
-
         </div>
 
-        {/* المعلومات الإضافية */}
-        <div className="mt-6">
+        {/* Team Members Section */}
+        <div className="text-center mb-6">
+          <h3 className="text-xl font-semibold">Team Members</h3>
+          <ul className="mt-2 flex justify-center items-center space-x-3">
+            <li className="flex items-center space-x-2">
+              <span>Roaa Abdulfattah Al_wesabi</span>
+              <a
+                href="https://github.com/Roaa2002-web"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-gray-400 hover:text-white"
+              >
+                <FaGithub size={20} />
+              </a>
+              <a
+                href="https://www.linkedin.com/in/roa-a-abdulfattah-b25181325"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-gray-400 hover:text-white"
+              >
+                <FaLinkedin size={20} />
+              </a>
+            </li>
+          </ul>
+        </div>
+
+        {/* Additional Build Info */}
+        <div className="text-center mt-6">
           {buildInfo && (
             <span className="text-xs">
               Build {buildInfo.build} ({buildInfo.commit})

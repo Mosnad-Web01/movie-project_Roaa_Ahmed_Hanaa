@@ -1,4 +1,3 @@
-// src/components/WhatsPopular.js
 "use client";
 import React, { useEffect, useState } from 'react';
 import { fetchFromTMDB } from '../lib/tmdbClient';
@@ -33,7 +32,7 @@ const UserScore = ({ score }) => {
         />
       </svg>
       <div className="absolute inset-0 flex items-center justify-center">
-        <span className="text-white font-bold text-sm">{score}%</span>
+        <span className="text-white font-bold text-xs md:text-sm">{score}%</span>
       </div>
     </div>
   );
@@ -108,30 +107,30 @@ const WhatsPopular = () => {
 
   return (
     <div className="px-6 py-4 bg-white dark:bg-gray-900 text-black dark:text-white">
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-3xl font-bold">Whats Popular</h2>
-        <div className="flex space-x-4">
+      <div className="flex flex-col md:flex-row justify-between items-center mb-6">
+        <h2 className="text-2xl md:text-3xl font-bold">Whats Popular</h2>
+        <div className="flex flex-wrap gap-2 md:gap-4 mt-4 md:mt-0">
           <button 
             onClick={() => setFilter('streaming')} 
-            className={`px-5 py-2.5 rounded-full ${filter === 'streaming' ? 'bg-gradient-to-r from-blue-500 to-green-500 text-white hover:bg-gradient-to-bl focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium' : 'bg-gray-700 border border-gray-700 text-gray-200'}`}
+            className={`px-3 py-1.5 md:px-5 md:py-2.5 rounded-full ${filter === 'streaming' ? 'bg-gradient-to-r from-blue-500 to-green-500 text-white hover:bg-gradient-to-bl focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium' : 'bg-gray-700 border border-gray-700 text-gray-200'}`}
           >
             Streaming
           </button>
           <button 
             onClick={() => setFilter('on-tv')} 
-            className={`px-5 py-2.5 rounded-full ${filter === 'on-tv' ? 'bg-gradient-to-r from-blue-500 to-green-500 text-white hover:bg-gradient-to-bl focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium' : 'bg-gray-700 border border-gray-700 text-gray-200'}`}
+            className={`px-3 py-1.5 md:px-5 md:py-2.5 rounded-full ${filter === 'on-tv' ? 'bg-gradient-to-r from-blue-500 to-green-500 text-white hover:bg-gradient-to-bl focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium' : 'bg-gray-700 border border-gray-700 text-gray-200'}`}
           >
             On TV
           </button>
           <button 
             onClick={() => setFilter('for-rent')} 
-            className={`px-5 py-2.5 rounded-full ${filter === 'for-rent' ? 'bg-gradient-to-r from-blue-500 to-green-500 text-white hover:bg-gradient-to-bl focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium' : 'bg-gray-700 border border-gray-700 text-gray-200'}`}
+            className={`px-3 py-1.5 md:px-5 md:py-2.5 rounded-full ${filter === 'for-rent' ? 'bg-gradient-to-r from-blue-500 to-green-500 text-white hover:bg-gradient-to-bl focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium' : 'bg-gray-700 border border-gray-700 text-gray-200'}`}
           >
             For Rent
           </button>
           <button 
             onClick={() => setFilter('in-theaters')} 
-            className={`px-5 py-2.5 rounded-full ${filter === 'in-theaters' ? 'bg-gradient-to-r from-blue-500 to-green-500 text-white hover:bg-gradient-to-bl focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium' : 'bg-gray-700 border border-gray-700 text-gray-200'}`}
+            className={`px-3 py-1.5 md:px-5 md:py-2.5 rounded-full ${filter === 'in-theaters' ? 'bg-gradient-to-r from-blue-500 to-green-500 text-white hover:bg-gradient-to-bl focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium' : 'bg-gray-700 border border-gray-700 text-gray-200'}`}
           >
             In Theaters
           </button>
@@ -140,20 +139,19 @@ const WhatsPopular = () => {
 
       <div className="relative">
         <div className="overflow-x-auto scrollbar-hide">
-          <div className="flex space-x-6" style={{ width: content.length * 300 }}>
+          <div className="flex space-x-4 md:space-x-6" style={{ width: content.length * 300 }}>
             {content.map(item => (
               <div 
                 key={item.id} 
-                className="relative bg-white dark:bg-gray-800 text-black dark:text-white rounded-lg shadow-md overflow-hidden w-[300px] h-[450px]"
+                className="relative bg-white dark:bg-gray-800 text-black dark:text-white rounded-lg shadow-md overflow-hidden w-[200px] md:w-[300px] h-[300px] md:h-[450px]"
               >
                 <div className="relative">
                   <Link href={`/${item.media_type === 'movie' || item.title ? 'movies' : 'tv'}/${item.id}`}>  
-                  <img 
-                    src={item.poster_path ? `https://image.tmdb.org/t/p/w500${item.poster_path}` : '/default-poster.png'} 
-                    alt={item.title || item.name} 
-                    className={`w-full h-[350px] object-cover ${dropdownVisible === item.id ? 'filter blur-sm' : ''}`}
-                  />
-
+                    <img 
+                      src={item.poster_path ? `https://image.tmdb.org/t/p/w500${item.poster_path}` : '/default-poster.png'} 
+                      alt={item.title || item.name} 
+                      className={`w-full h-[200px] md:h-[350px] object-cover ${dropdownVisible === item.id ? 'filter blur-sm' : ''}`}
+                    />
                   </Link>
 
                   <div className="absolute bottom-2 left-2">
@@ -161,9 +159,9 @@ const WhatsPopular = () => {
                   </div>
                 </div>
 
-                <div className="p-4">
-                  <h3 className="text-lg font-semibold">{item.title || item.name}</h3>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">{new Date(item.release_date || item.first_air_date).toDateString()}</p>
+                <div className="p-2 md:p-4">
+                  <h3 className="text-sm md:text-lg font-semibold">{item.title || item.name}</h3>
+                  <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400">{new Date(item.release_date || item.first_air_date).toDateString()}</p>
                 </div>
 
                 <div className="absolute top-2 right-2">
@@ -172,19 +170,19 @@ const WhatsPopular = () => {
                   </button>
 
                   {dropdownVisible === item.id && (
-                    <div className="absolute right-0 mt-2 w-40 bg-white dark:bg-gray-800 rounded-lg shadow-lg z-10">
+                    <div className="absolute right-0 mt-2 w-32 md:w-40 bg-white dark:bg-gray-800 rounded-lg shadow-lg z-10">
                       <ul>
-                        <li className="px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer flex items-center">
-                          <FaList className="mr-2" /> Add to list
+                        <li className="px-2 md:px-4 py-1 md:py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer flex items-center text-xs md:text-sm">
+                          <FaList className="mr-1 md:mr-2" /> Add to list
                         </li>
-                        <li className="px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer flex items-center">
-                          <FaHeart className="mr-2" /> Favorite
+                        <li className="px-2 md:px-4 py-1 md:py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer flex items-center text-xs md:text-sm">
+                          <FaHeart className="mr-1 md:mr-2" /> Favorite
                         </li>
-                        <li className="px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer flex items-center">
-                          <FaEye className="mr-2" /> Watchlist
+                        <li className="px-2 md:px-4 py-1 md:py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer flex items-center text-xs md:text-sm">
+                          <FaEye className="mr-1 md:mr-2" /> Watchlist
                         </li>
-                        <li className="px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer flex items-center">
-                          <FaStar className="mr-2" /> Your rating
+                        <li className="px-2 md:px-4 py-1 md:py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer flex items-center text-xs md:text-sm">
+                          <FaStar className="mr-1 md:mr-2" /> Your rating
                         </li>
                       </ul>
                     </div>

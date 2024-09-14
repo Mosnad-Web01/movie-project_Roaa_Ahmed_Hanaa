@@ -72,11 +72,11 @@ const LatestTrailers = () => {
   };
 
   return (
-    <div className="bg-white dark:bg-gray-900 text-black dark:text-white p-4"> {/* تغيير الخلفية والنص */}
+    <div className="bg-white dark:bg-gray-900 text-black dark:text-white p-4">
       <h2 className="text-2xl font-bold mb-4">Latest Trailers</h2>
 
       {/* قائمة الفلاتر */}
-      <div className="flex space-x-4 mb-4">
+      <div className="flex flex-wrap gap-4 mb-4">
         <button
           onClick={() => setFilter('popular')}
           className={`px-5 py-2.5 rounded-full ${filter === 'popular' ? 'bg-gradient-to-r from-blue-500 to-green-500 text-white hover:bg-gradient-to-bl focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium' : 'bg-gray-700 border border-gray-700 text-gray-200'}`}
@@ -109,9 +109,8 @@ const LatestTrailers = () => {
         </button>
       </div>
 
-
-      <div className="relative overflow-x-auto scrollbar-hide">
-        <div className="flex space-x-4">
+      <div className="relative overflow-x-auto">
+        <div className="flex space-x-4 min-w-max">
           {trailers.length > 0 ? (
             trailers.map((trailer) => (
               <div key={trailer.id} className="relative rounded-md shadow-md overflow-hidden w-80 flex-shrink-0">
@@ -152,32 +151,30 @@ const LatestTrailers = () => {
 
       {/* نافذة عرض الـ Trailer */}
       <Modal
-  isOpen={isOpen}
-  onRequestClose={closeModal}
-  contentLabel="Trailer"
-  className="bg-gray-800 p-4 rounded-md w-full max-w-4xl mx-auto my-20" // زيادة العرض
-  overlayClassName="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center"
->
-  {selectedTrailer && (
-    <div className="text-center">
-      <h2 className="text-2xl font-bold mb-4 text-white">{selectedTrailer.title || selectedTrailer.name}</h2>
-      <iframe
-        width="100%"
-        height="400"
-        src={`https://www.youtube.com/embed/${selectedTrailer.key}`}
-        title={selectedTrailer.title || selectedTrailer.name}
-        frameBorder="0"
-        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-        allowFullScreen
-      />
-      <button onClick={closeModal} className="mt-4 px-4 py-2 bg-red-500 text-white rounded">
-        Close
-      </button>
-    </div>
-  )}
-</Modal>
-
-
+        isOpen={isOpen}
+        onRequestClose={closeModal}
+        contentLabel="Trailer"
+        className="bg-gray-800 p-4 rounded-md w-full max-w-2xl mx-auto my-20"
+        overlayClassName="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center"
+      >
+        {selectedTrailer && (
+          <div className="text-center">
+            <h2 className="text-xl font-bold mb-4 text-white">{selectedTrailer.title || selectedTrailer.name}</h2>
+            <iframe
+              width="100%"
+              height="300"
+              src={`https://www.youtube.com/embed/${selectedTrailer.key}`}
+              title={selectedTrailer.title || selectedTrailer.name}
+              frameBorder="0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+            />
+            <button onClick={closeModal} className="mt-4 px-4 py-2 bg-red-500 text-white rounded text-sm">
+              Close
+            </button>
+          </div>
+        )}
+      </Modal>
     </div>
   );
 };
