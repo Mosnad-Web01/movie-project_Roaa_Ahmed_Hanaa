@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from 'react';
+import React, { Suspense, useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { searchTMDB } from '../../lib/searchClient';
 import Image from 'next/image';
@@ -77,4 +77,10 @@ const SearchResults = () => {
   );
 };
 
-export default SearchResults;
+const SearchPage = () => (
+  <Suspense fallback={<div>Loading page...</div>}>
+    <SearchResults />
+  </Suspense>
+);
+
+export default SearchPage;
