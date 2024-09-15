@@ -196,7 +196,7 @@ const MovieDetails = () => {
           overlayClassName="fixed inset-0 bg-black bg-opacity-70"
         >
           {trailerKey ? (
-            <div className="relative w-full max-w-3xl">
+            <div className="relative w-full max-w-3xl sm:max-w-xs">
               <button
                 onClick={closeModal}
                 className="absolute top-2 right-2 text-white text-2xl"
@@ -206,6 +206,7 @@ const MovieDetails = () => {
               <iframe
                 width="100%"
                 height="500"
+                className="sm:h-48 h-500" // الحجم الكبير يبقى افتراضيًا
                 src={`https://www.youtube.com/embed/${trailerKey}`}
                 title="Trailer"
                 frameBorder="0"
@@ -217,6 +218,7 @@ const MovieDetails = () => {
             <div className="text-white">Trailer not available</div>
           )}
         </ReactModal>
+
       </div>
     </div>
   );

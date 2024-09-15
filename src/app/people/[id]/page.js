@@ -107,7 +107,10 @@ const PersonDetails = () => {
               <h2 className="text-2xl font-bold mb-4">Acting</h2>
               <div className="flex overflow-x-scroll space-x-4">
                 {credits.cast.map((role) => (
-                  <Link key={role.id} href={`/movies/${role.id}`}>
+                  <Link
+                    key={role.id}
+                    href={role.media_type === 'movie' ? `/movies/${role.id}` : `/tv/${role.id}`}
+                  >
                     <div className="min-w-[150px] cursor-pointer">
                       <Image
                         src={`https://image.tmdb.org/t/p/w200${role.poster_path}`}
@@ -122,6 +125,7 @@ const PersonDetails = () => {
                 ))}
               </div>
             </div>
+
           </div>
         </div>
       </div>

@@ -20,7 +20,8 @@ const Main = () => {
 
   const handleSearch = () => {
     if (searchQuery) {
-      router.push(`/Search?query=${searchQuery}`); // استخدم S الكبيرة هنا
+      const formattedQuery = searchQuery.toLowerCase(); // تحويل الاستعلام إلى حروف صغيرة
+      router.push(`/Search?query=${formattedQuery}`); // استخدم S الكبيرة هنا
     }
   };
 
@@ -47,7 +48,7 @@ const Main = () => {
           <input
             type="text"
             className="w-full px-4 py-3 rounded-full bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="Search for a movie, tv show, person......"
+            placeholder="Search for a movie, tv show, person..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
