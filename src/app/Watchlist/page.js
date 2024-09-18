@@ -1,3 +1,7 @@
+// src/app/Watchlist/page.js
+
+'use client'; // إضافة هذا السطر لتحديد أن هذا مكون عميل
+
 import React, { useState, useEffect } from 'react';
 import MovieCard from '../../components/MovieCard';
 
