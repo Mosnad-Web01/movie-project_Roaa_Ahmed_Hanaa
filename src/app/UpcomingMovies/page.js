@@ -1,16 +1,17 @@
 "use client";
 import React, { useEffect, useState } from 'react';
 import { fetchFromTMDB } from '../../lib/tmdbClient';
-import FilterByGenreAndSort from '../../components/FilterByGenreAndSort'; // تأكد من أن هذا المكون موجود ويعمل مع الفلاتر المناسبة
-import DropdownMenu from '../../components/DropdownMenu';
-import Link from 'next/link';
+import FilterByGenreAndSort from '../../components/FilterByGenreAndSort'; 
+import MovieCard from '../../components/MovieCard'; 
+import useAuth from '../../lib/useAuth'; 
 
 const UpcomingMovies = () => {
   const [upcomingMovies, setUpcomingMovies] = useState([]);
   const [filteredMovies, setFilteredMovies] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [moviesPerPage] = useState(15);
-  const [dropdownVisible, setDropdownVisible] = useState(null);
+
+  const user = useAuth();
 
   useEffect(() => {
     const fetchUpcomingMovies = async () => {
@@ -27,14 +28,12 @@ const UpcomingMovies = () => {
   const handleFilterChange = (selectedGenres, sortOrder) => {
     let filtered = upcomingMovies;
 
-    // Filter by selected genres (if you have genre filtering)
     if (selectedGenres.length > 0) {
       filtered = upcomingMovies.filter(movie =>
         selectedGenres.every(genre => movie.genre_ids.includes(genre))
       );
     }
 
-    // Sort by selected order
     filtered.sort((a, b) => {
       if (sortOrder === 'popularity.desc') {
         return b.popularity - a.popularity;
@@ -49,10 +48,9 @@ const UpcomingMovies = () => {
     });
 
     setFilteredMovies(filtered);
-    setCurrentPage(1); // العودة إلى الصفحة الأولى بعد التصفية
+    setCurrentPage(1);
   };
 
-  // Pagination logic
   const indexOfLastMovie = currentPage * moviesPerPage;
   const indexOfFirstMovie = indexOfLastMovie - moviesPerPage;
   const currentMovies = filteredMovies.slice(indexOfFirstMovie, indexOfLastMovie);
@@ -69,43 +67,24 @@ const UpcomingMovies = () => {
     }
   };
 
-  // Toggle dropdown visibility
-  const toggleDropdown = (movieId, event) => {
-    event.stopPropagation();
-    setDropdownVisible(prevState => (prevState === movieId ? null : movieId));
-  };
-
   return (
     <div className="flex flex-col lg:flex-row dark:bg-gray-900">
-      {/* Sidebar - Filters */}
       <aside className="w-full lg:w-1/4 bg-white dark:bg-gray-800 p-4 sm:p-6 space-y-6 sm:space-y-8 shadow-md rounded-lg">
         <FilterByGenreAndSort onFilterChange={handleFilterChange} />
       </aside>
 
-      {/* Main Content - Movies */}
       <main className="w-full lg:w-3/4 p-4 sm:p-6">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
           {currentMovies.map(movie => (
-            <div key={movie.id} className="relative bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden">
-              <Link href={`/movies/${movie.id}`}>
-                <img
-                  src={`https://image.tmdb.org/t/p/w500${movie.poster_path}`}
-                  alt={movie.title}
-                  className="w-full h-[250px] sm:h-[300px] md:h-[350px] object-cover"
-                />
-              </Link>
-              <div className="p-2 sm:p-4">
-                <h3 className="text-sm sm:text-lg font-semibold text-gray-900 dark:text-gray-100">{movie.title}</h3>
-                <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">
-                  {new Date(movie.release_date).toDateString()}
-                </p>
-              </div>
-              <DropdownMenu dropdownVisible={dropdownVisible} toggleDropdown={toggleDropdown} movieId={movie.id} />
-            </div>
+            <MovieCard 
+              key={movie.id} 
+              item={movie} 
+              isLoggedIn={!!user} 
+              media_type="movie" // تمرير media_type كـ "movie"
+            />
           ))}
         </div>
 
-        {/* Pagination Buttons */}
         <div className="flex flex-col sm:flex-row justify-between mt-4 sm:mt-6 space-y-2 sm:space-y-0">
           <button
             onClick={handlePrevPage}

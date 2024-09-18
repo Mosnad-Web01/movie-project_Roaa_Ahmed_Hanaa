@@ -29,7 +29,7 @@ const Footer = () => {
         </div>
 
         {/* Navigation Sections */}
-        <div className="grid grid-cols-1 sm:grid-cols-4 gap-8 text-left mb-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 text-left mb-6">
           {/* The Basics */}
           <div>
             <h4 className="font-bold mb-2">The Basics</h4>
@@ -76,6 +76,7 @@ const Footer = () => {
             </ul>
           </div>
         </div>
+
 
         {/* Team Members Section */}
         <div className="text-center mb-6">

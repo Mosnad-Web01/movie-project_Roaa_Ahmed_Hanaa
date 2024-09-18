@@ -1,49 +1,17 @@
 "use client";
 import React, { useEffect, useState } from 'react';
 import { fetchFromTMDB } from '../lib/tmdbClient';
-import { FaList, FaHeart, FaEye, FaStar } from 'react-icons/fa';
-import Link from 'next/link';
-import Image from 'next/image';
+import MovieCard from './MovieCard';
+import useAuth from '../lib/useAuth';// تأكد من المسار الصحيح
 
-const UserScore = ({ score }) => {
-  const circleRadius = 20;
-  const circleCircumference = 2 * Math.PI * circleRadius;
-  const progressOffset = circleCircumference - (score / 100) * circleCircumference;
-
-  return (
-    <div className="relative w-12 h-12">
-      <svg className="transform -rotate-90" width="48" height="48" viewBox="0 0 48 48">
-        <circle
-          cx="24"
-          cy="24"
-          r={circleRadius}
-          stroke="#ccc"
-          strokeWidth="4"
-          fill="transparent"
-        />
-        <circle
-          cx="24"
-          cy="24"
-          r={circleRadius}
-          stroke="#21d07a"
-          strokeWidth="4"
-          fill="transparent"
-          strokeDasharray={circleCircumference}
-          strokeDashoffset={progressOffset}
-        />
-      </svg>
-      <div className="absolute inset-0 flex items-center justify-center">
-        <span className="text-white font-bold text-sm">{score}%</span>
-      </div>
-    </div>
-  );
-};
 
 const FreeToWatch = () => {
   const [content, setContent] = useState([]);
   const [timeRange, setTimeRange] = useState('week');
   const [filter, setFilter] = useState('movie');
   const [dropdownVisible, setDropdownVisible] = useState(null);
+  const user = useAuth(); // جلب المستخدم
+  const isLoggedIn = !!user; // إذا كان المستخدم موجودًا، يعني أنه مسجل الدخول
 
   useEffect(() => {
     const fetchContent = async () => {
@@ -101,55 +69,13 @@ const FreeToWatch = () => {
         <div className="overflow-x-auto scrollbar-hide">
           <div className="flex flex-nowrap space-x-4" style={{ width: content.length * 300 }}>
             {content.map(item => (
-              <div
+              <MovieCard
                 key={item.id}
-                className="relative bg-white dark:bg-gray-800 text-black dark:text-white rounded-lg shadow-md overflow-hidden w-[300px] h-[450px]"
-              >
-                <div className="relative">
-                  <Link href={`/${item.media_type === 'movie' || item.title ? 'movies' : 'tv'}/${item.id}`}>
-                    <Image
-                      src={`https://image.tmdb.org/t/p/w500${item.poster_path}`}
-                      alt={item.title || item.name}
-                      width={500}
-                      height={700}
-                      className={`w-full h-[350px] object-cover ${dropdownVisible === item.id ? 'filter blur-sm' : ''}`}
-                    />
-                  </Link>
-                  <div className="absolute bottom-2 left-2">
-                    <UserScore score={Math.round(item.vote_average * 10)} />
-                  </div>
-                </div>
-
-                <div className="p-4">
-                  <h3 className="text-lg font-semibold">{item.title || item.name}</h3>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">{new Date(item.release_date || item.first_air_date).toDateString()}</p>
-                </div>
-
-                <div className="absolute top-2 right-2">
-                  <button onClick={(event) => toggleDropdown(item.id, event)} className="focus:outline-none">
-                    <span className="text-gray-600 dark:text-gray-400">•••</span>
-                  </button>
-
-                  {dropdownVisible === item.id && (
-                    <div className="absolute right-0 mt-2 w-40 bg-white dark:bg-gray-800 rounded-lg shadow-lg z-10">
-                      <ul>
-                        <li className="px-3 py-1 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer flex items-center text-sm">
-                          <FaList className="mr-2" /> Add to list
-                        </li>
-                        <li className="px-3 py-1 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer flex items-center text-sm">
-                          <FaHeart className="mr-2" /> Favorite
-                        </li>
-                        <li className="px-3 py-1 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer flex items-center text-sm">
-                          <FaEye className="mr-2" /> Watchlist
-                        </li>
-                        <li className="px-3 py-1 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer flex items-center text-sm">
-                          <FaStar className="mr-2" /> Your rating
-                        </li>
-                      </ul>
-                    </div>
-                  )}
-                </div>
-              </div>
+                item={item}
+                isLoggedIn={isLoggedIn} // تمرير حالة تسجيل الدخول
+                toggleDropdown={(event) => toggleDropdown(item.id, event)}
+                dropdownVisible={dropdownVisible === item.id}
+              />
             ))}
           </div>
         </div>
