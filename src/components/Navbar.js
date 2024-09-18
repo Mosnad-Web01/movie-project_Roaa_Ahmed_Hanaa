@@ -49,6 +49,10 @@ const Navbar = () => {
           <Image src="/images/logo.svg" alt="Logo" width={100} height={40} />
         </Link>
         <div className="hidden md:flex space-x-6">
+          {/* رابط الصفحة الرئيسية Home */}
+          <a href="/" className="text-xl font-semibold hover:underline">
+            Home
+          </a>
           <NavbarDropdown
             title="Movies"
             links={[
@@ -83,6 +87,7 @@ const Navbar = () => {
           <button className="absolute top-4 right-4 p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700" onClick={toggleMobileMenu}>
             <FaTimes className="text-xl" />
           </button>
+          
           <NavbarDropdown
             title="Movies"
             links={[
