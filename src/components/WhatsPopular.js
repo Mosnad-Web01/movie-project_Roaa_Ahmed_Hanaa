@@ -1,15 +1,21 @@
-"use client";
+// src/components/WhatsPopular.js
+
+"use client"; // تعريف المكون كعميل في Next.js
 import React, { useEffect, useState } from 'react';
-import { fetchFromTMDB } from '../lib/tmdbClient';
-import MovieCard from './MovieCard'; // تأكد من أن MovieCard موجود ويمكنك استخدامه
-import useAuth from '../lib/useAuth'; // تأكد من أن المسار صحيح
+import { fetchFromTMDB } from '../lib/tmdbClient'; // استيراد دالة fetch لجلب البيانات من TMDB
+import useAuth from '../lib/useAuth'; // استيراد hook التحقق من تسجيل الدخول
+import { useTranslation } from 'react-i18next'; // استيراد مكتبة الترجمة
+import ScrollableMovieList from './ScrollableMovieList'; // استيراد مكون شريط التمرير للأفلام
+import FilterButtons from './FilterButtons'; // استيراد مكون الأزرار الخاصة بالتصفية
+import { motion } from 'framer-motion'; // استيراد مكتبة framer-motion للأنيميشن
 
 const WhatsPopular = () => {
-  const [content, setContent] = useState([]);
-  const [filter, setFilter] = useState('in-theaters');
-  const [dropdownVisible, setDropdownVisible] = useState(null);
+  const [content, setContent] = useState([]); // حالة لتخزين محتوى الأفلام والبرامج
+  const [filter, setFilter] = useState('in-theaters'); // حالة للتحكم في الفلتر الحالي
+  const [dropdownVisible, setDropdownVisible] = useState(null); // حالة للتحكم في ظهور القائمة المنسدلة
   const user = useAuth(); // جلب المستخدم
-  const isLoggedIn = !!user; // إذا كان المستخدم موجودًا، يعني أنه مسجل الدخول
+  const isLoggedIn = !!user; // التحقق إذا كان المستخدم مسجل الدخول
+  const { t, i18n } = useTranslation(); // استخدام الترجمة للحصول على النصوص حسب اللغة
 
   useEffect(() => {
     const fetchMoviesAndShows = async () => {
@@ -40,13 +46,12 @@ const WhatsPopular = () => {
 
       try {
         const [moviesData, tvData] = await Promise.all([
-          fetchFromTMDB(movieEndpoint),
-          fetchFromTMDB(tvEndpoint)
+          fetchFromTMDB(movieEndpoint, i18n.language),
+          fetchFromTMDB(tvEndpoint, i18n.language)
         ]);
 
         if (moviesData && tvData) {
           const combinedContent = [...moviesData.results, ...tvData.results];
-          // دمج المحتوى وترتيبه عشوائياً
           setContent(combinedContent.sort(() => Math.random() - 0.5));
         }
       } catch (error) {
@@ -54,9 +59,10 @@ const WhatsPopular = () => {
       }
     };
 
-    fetchMoviesAndShows();
-  }, [filter]);
+    fetchMoviesAndShows(); // استدعاء الدالة لجلب البيانات
+  }, [filter, i18n.language]); // جلب البيانات عند تغيير الفلتر أو اللغة
 
+  // دالة لإخفاء القائمة المنسدلة عند النقر خارجها
   useEffect(() => {
     const handleClickOutside = () => {
       setDropdownVisible(null);
@@ -68,59 +74,39 @@ const WhatsPopular = () => {
     };
   }, [dropdownVisible]);
 
+  // دالة للتبديل بين عرض القائمة المنسدلة للأفلام
   const toggleDropdown = (id, event) => {
-    event.stopPropagation(); // Prevent closing the dropdown when clicking inside
+    event.stopPropagation(); // منع إغلاق القائمة عند النقر داخلها
     setDropdownVisible(dropdownVisible === id ? null : id);
   };
 
   return (
     <div className="px-6 py-4 bg-white dark:bg-gray-900 text-black dark:text-white">
-      <div className="flex flex-col sm:flex-row justify-between items-center mb-6">
-        <h2 className="text-3xl font-bold mb-4 sm:mb-0">What is Popular</h2>
-
-        <div className="flex flex-wrap gap-2 mt-4 sm:mt-0">
-          <button
-            onClick={() => setFilter('streaming')}
-            className={`px-4 py-2 rounded-full ${filter === 'streaming' ? 'bg-gradient-to-r from-blue-500 to-green-500 text-white hover:bg-gradient-to-bl focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium' : 'bg-gray-700 border border-gray-700 text-gray-200'}`}
-          >
-            Streaming
-          </button>
-          <button
-            onClick={() => setFilter('on-tv')}
-            className={`px-4 py-2 rounded-full ${filter === 'on-tv' ? 'bg-gradient-to-r from-blue-500 to-green-500 text-white hover:bg-gradient-to-bl focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium' : 'bg-gray-700 border border-gray-700 text-gray-200'}`}
-          >
-            On TV
-          </button>
-          <button
-            onClick={() => setFilter('for-rent')}
-            className={`px-4 py-2 rounded-full ${filter === 'for-rent' ? 'bg-gradient-to-r from-blue-500 to-green-500 text-white hover:bg-gradient-to-bl focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium' : 'bg-gray-700 border border-gray-700 text-gray-200'}`}
-          >
-            For Rent
-          </button>
-          <button
-            onClick={() => setFilter('in-theaters')}
-            className={`px-4 py-2 rounded-full ${filter === 'in-theaters' ? 'bg-gradient-to-r from-blue-500 to-green-500 text-white hover:bg-gradient-to-bl focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium' : 'bg-gray-700 border border-gray-700 text-gray-200'}`}
-          >
-            In Theaters
-          </button>
-        </div>
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-3xl font-bold">{t('What is Popular')}</h2> {/* استخدام الترجمة لعنوان */}
+        
+        {/* مكون الأزرار لتصفية الأفلام بين الفئات المختلفة */}
+        <FilterButtons
+          filterOptions={['streaming', 'on-tv', 'for-rent', 'in-theaters']} // خيارات التصفية
+          currentFilter={filter} // الفلتر الحالي
+          setFilter={setFilter} // دالة لتغيير الفلتر
+          i18n={i18n} // تمرير مكتبة الترجمة
+        />
       </div>
 
-      <div className="relative">
-        <div className="overflow-x-auto scrollbar-hide">
-          <div className="flex flex-nowrap space-x-4" style={{ width: content.length * 300 }}>
-            {content.map(item => (
-              <MovieCard
-                key={item.id}
-                item={item}
-                isLoggedIn={isLoggedIn} // تمرير حالة تسجيل الدخول
-                toggleDropdown={(event) => toggleDropdown(item.id, event)}
-                dropdownVisible={dropdownVisible === item.id}
-              />
-            ))}
-          </div>
-        </div>
-      </div>
+      {/* عرض الأفلام مع تأثير دخول بالأنيميشن */}
+      <motion.div
+        initial={{ opacity: 0, y: 30 }} // وضع البداية للأنيميشن
+        animate={{ opacity: 1, y: 0 }} // الوضع النهائي
+        transition={{ duration: 1.5, ease: "easeOut" }} // ضبط سرعة الانيميشن
+      >
+        <ScrollableMovieList
+          content={content} // تمرير المحتوى المعروض (الأفلام والبرامج)
+          isLoggedIn={isLoggedIn} // تمرير حالة تسجيل الدخول
+          toggleDropdown={toggleDropdown} // تمرير دالة التحكم بالقائمة المنسدلة
+          dropdownVisible={dropdownVisible} // تمرير حالة ظهور القائمة المنسدلة
+        />
+      </motion.div>
     </div>
   );
 };

@@ -1,10 +1,9 @@
 const API_KEY = process.env.NEXT_PUBLIC_TMDB_API_KEY;
 const BASE_URL = 'https://api.themoviedb.org/3';
 
-
-export const fetchFromTMDB = async (endpoint, language = 'en-US') => {
+export const fetchFromTMDBArabic = async (endpoint) => {
   try {
-    const response = await fetch(`${BASE_URL}${endpoint}?api_key=${API_KEY}&language=${language}`);
+    const response = await fetch(`${BASE_URL}${endpoint}?api_key=${API_KEY}&language=ar-SA`);
     if (!response.ok) {
       throw new Error('Network response was not ok');
     }
@@ -12,7 +11,5 @@ export const fetchFromTMDB = async (endpoint, language = 'en-US') => {
   } catch (error) {
     console.error('Fetch error:', error);
     return null;
-  } 
+  }
 };
-
-

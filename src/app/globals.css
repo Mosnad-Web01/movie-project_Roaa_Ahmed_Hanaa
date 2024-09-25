@@ -21,7 +21,41 @@ body {
 }
 
 @layer utilities {
-  .text-balance {
-    text-wrap: balance;
+  /* أنماط شريط التمرير */
+  .scrollbar-hide {
+    scrollbar-width: thin; /* لمتصفحات Firefox */
+    scrollbar-color: transparent transparent; /* لمتصفحات Firefox */
+  }
+
+  /* لأنماط Webkit لمتصفحات Chrome, Safari وEdge */
+  .scrollbar-hide::-webkit-scrollbar {
+    width: 10px; /* عرض شريط التمرير */
+    height: 10px; /* ارتفاع شريط التمرير */
+  }
+
+  .scrollbar-hide::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.1); /* لون خلفية الشريط */
+    border-radius: 10px; /* زوايا ناعمة */
+  }
+
+  .scrollbar-hide::-webkit-scrollbar-thumb {
+    background: rgba(100, 100, 100, 0.8); /* لون مقبض الشريط */
+    border-radius: 10px; /* زوايا ناعمة */
+    transition: background 0.3s ease; /* تأثير انتقال سلس */
+  }
+
+  .scrollbar-hide::-webkit-scrollbar-thumb:hover {
+    background: rgba(150, 150, 150, 0.9); /* لون مقبض الشريط عند التمرير */
+  }
+
+  /* لتغيير الألوان حسب الوضع الليلي */
+  body.dark-mode .scrollbar-hide::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.6); /* لون مقبض الشريط في الوضع الليلي */
+  }
+
+  body.dark-mode .scrollbar-hide::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.2); /* لون خلفية الشريط في الوضع الليلي */
   }
 }
+
+

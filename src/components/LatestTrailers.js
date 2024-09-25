@@ -1,17 +1,22 @@
 "use client";
 import React, { useState, useEffect } from 'react';
 import Modal from 'react-modal';
-import { fetchFromTMDB } from '../lib/tmdbClient'; // تأكد من أن هذه الدالة تجلب بيانات الأفلام بشكل صحيح
+import { fetchFromTMDB } from '../lib/tmdbClient';
+import useAuth from '../lib/useAuth';
+import { useTranslation } from 'react-i18next';
 
 const LatestTrailers = () => {
   const [trailers, setTrailers] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
   const [selectedTrailer, setSelectedTrailer] = useState(null);
-  const [filter, setFilter] = useState('popular'); // الفلتر الافتراضي هو "Popular"
+  const [filter, setFilter] = useState('popular');
+  const user = useAuth();
+  const isLoggedIn = !!user;
+  const { i18n } = useTranslation();
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      Modal.setAppElement('body'); // استخدام 'body' كعنصر للتطبيق لتفادي تحذيرات الوصول
+      Modal.setAppElement('body');
     }
   }, []);
 
@@ -20,46 +25,43 @@ const LatestTrailers = () => {
       try {
         let endpoint = '';
 
-        // تحديد مسار الـ API بناءً على الفلتر
         switch (filter) {
           case 'popular':
             endpoint = '/movie/popular';
             break;
           case 'streaming':
-            endpoint = '/movie/now_playing'; // أفلام متاحة للبث
+            endpoint = '/movie/now_playing';
             break;
           case 'on_tv':
-            endpoint = '/tv/on_the_air'; // برامج تلفزيونية حالية
+            endpoint = '/tv/on_the_air';
             break;
           case 'for_rent':
-            endpoint = '/movie/upcoming'; // يمكنك استخدام API مناسب إذا كان متاحًا
+            endpoint = '/movie/upcoming';
             break;
           case 'in_theaters':
-            endpoint = '/movie/now_playing'; // أفلام في السينما الآن
+            endpoint = '/movie/now_playing';
             break;
           default:
             endpoint = '/movie/popular';
         }
 
-        // جلب البيانات بناءً على الفلتر
-        const moviesData = await fetchFromTMDB(endpoint);
+        const moviesData = await fetchFromTMDB(endpoint, i18n.language);
         const movieResults = moviesData.results || [];
 
-        // جلب الترايلرز لكل فيلم عبر ID الفيلم
         const trailerPromises = movieResults.map(async (movie) => {
-          const videoData = await fetchFromTMDB(`/movie/${movie.id}/videos`);
+          const videoData = await fetchFromTMDB(`/movie/${movie.id}/videos`, i18n.language);
           return videoData.results.find((video) => video.type === 'Trailer' && video.site === 'YouTube');
         });
 
         const fetchedTrailers = await Promise.all(trailerPromises);
-        setTrailers(fetchedTrailers.filter(Boolean)); // فلترة النتائج الغير موجودة
+        setTrailers(fetchedTrailers.filter(Boolean));
       } catch (error) {
         console.error("Error fetching trailers:", error);
       }
     };
 
     fetchLatestTrailers();
-  }, [filter]); // جلب البيانات عند تغيير الفلتر
+  }, [filter, i18n.language]);
 
   const openModal = (trailer) => {
     setSelectedTrailer(trailer);
@@ -73,39 +75,38 @@ const LatestTrailers = () => {
 
   return (
     <div className="bg-white dark:bg-gray-900 text-black dark:text-white p-4">
-      <h2 className="text-2xl font-bold mb-4">Latest Trailers</h2>
+      <h2 className="text-2xl font-bold mb-4">{i18n.t('Latest Trailers')}</h2>
 
-      {/* قائمة الفلاتر */}
       <div className="flex flex-wrap gap-4 mb-4">
         <button
           onClick={() => setFilter('popular')}
-          className={`px-5 py-2.5 rounded-full ${filter === 'popular' ? 'bg-gradient-to-r from-blue-500 to-green-500 text-white hover:bg-gradient-to-bl focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium' : 'bg-gray-700 border border-gray-700 text-gray-200'}`}
+          className={`px-5 py-2.5 rounded-full ${filter === 'popular' ? 'bg-gradient-to-r from-blue-500 to-green-500 text-white' : 'bg-gray-700 border border-gray-700 text-gray-200'}`}
         >
-          Popular
+          {i18n.t('Popular')}
         </button>
         <button
           onClick={() => setFilter('streaming')}
-          className={`px-5 py-2.5 rounded-full ${filter === 'streaming' ? 'bg-gradient-to-r from-blue-500 to-green-500 text-white hover:bg-gradient-to-bl focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium' : 'bg-gray-700 border border-gray-700 text-gray-200'}`}
+          className={`px-5 py-2.5 rounded-full ${filter === 'streaming' ? 'bg-gradient-to-r from-blue-500 to-green-500 text-white' : 'bg-gray-700 border border-gray-700 text-gray-200'}`}
         >
-          Streaming
+          {i18n.t('Streaming')}
         </button>
         <button
           onClick={() => setFilter('on_tv')}
-          className={`px-5 py-2.5 rounded-full ${filter === 'on_tv' ? 'bg-gradient-to-r from-blue-500 to-green-500 text-white hover:bg-gradient-to-bl focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium' : 'bg-gray-700 border border-gray-700 text-gray-200'}`}
+          className={`px-5 py-2.5 rounded-full ${filter === 'on_tv' ? 'bg-gradient-to-r from-blue-500 to-green-500 text-white' : 'bg-gray-700 border border-gray-700 text-gray-200'}`}
         >
-          On TV
+          {i18n.t('On TV')}
         </button>
         <button
           onClick={() => setFilter('for_rent')}
-          className={`px-5 py-2.5 rounded-full ${filter === 'for_rent' ? 'bg-gradient-to-r from-blue-500 to-green-500 text-white hover:bg-gradient-to-bl focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium' : 'bg-gray-700 border border-gray-700 text-gray-200'}`}
+          className={`px-5 py-2.5 rounded-full ${filter === 'for_rent' ? 'bg-gradient-to-r from-blue-500 to-green-500 text-white' : 'bg-gray-700 border border-gray-700 text-gray-200'}`}
         >
-          For Rent
+          {i18n.t('For Rent')}
         </button>
         <button
           onClick={() => setFilter('in_theaters')}
-          className={`px-5 py-2.5 rounded-full ${filter === 'in_theaters' ? 'bg-gradient-to-r from-blue-500 to-green-500 text-white hover:bg-gradient-to-bl focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium' : 'bg-gray-700 border border-gray-700 text-gray-200'}`}
+          className={`px-5 py-2.5 rounded-full ${filter === 'in_theaters' ? 'bg-gradient-to-r from-blue-500 to-green-500 text-white' : 'bg-gray-700 border border-gray-700 text-gray-200'}`}
         >
-          In Theaters
+          {i18n.t('In Theaters')}
         </button>
       </div>
 
@@ -144,12 +145,11 @@ const LatestTrailers = () => {
               </div>
             ))
           ) : (
-            <p>No trailers available for the selected category.</p>
+            <p>{i18n.t('No trailers available for the selected category.')}</p>
           )}
         </div>
       </div>
 
-      {/* نافذة عرض الـ Trailer */}
       <Modal
         isOpen={isOpen}
         onRequestClose={closeModal}
@@ -170,7 +170,7 @@ const LatestTrailers = () => {
               allowFullScreen
             />
             <button onClick={closeModal} className="mt-4 px-4 py-2 bg-red-500 text-white rounded text-sm">
-              Close
+              {i18n.t('Close')}
             </button>
           </div>
         )}

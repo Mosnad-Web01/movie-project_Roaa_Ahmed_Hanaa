@@ -1,12 +1,15 @@
 "use client";
 import React, { useEffect, useState } from 'react';
 import { fetchFromTMDB } from '../../../../lib/tmdbClient';
+import FilterButtons from '../../../../components/FilterButtons';
+import { useTranslation } from 'react-i18next'; // i18next for translation
 
 const Media = ({ movieId }) => {
   const [mostPopularVideos, setMostPopularVideos] = useState([]);
   const [backdrops, setBackdrops] = useState([]);
   const [posters, setPosters] = useState([]);
   const [selectedSection, setSelectedSection] = useState('popular'); // default section is 'popular'
+  const { i18n } = useTranslation(); // Get current language from i18n
 
   useEffect(() => {
     const fetchMedia = async () => {
@@ -14,11 +17,11 @@ const Media = ({ movieId }) => {
         console.log("Fetching media for movieId:", movieId);
 
         // Fetch video data
-        const videoData = await fetchFromTMDB(`/movie/${movieId}/videos`);
+        const videoData = await fetchFromTMDB(`/movie/${movieId}/videos`, i18n.language);
         setMostPopularVideos(videoData?.results || []);
 
         // Fetch images data
-        const imageData = await fetchFromTMDB(`/movie/${movieId}/images`);
+        const imageData = await fetchFromTMDB(`/movie/${movieId}/images`, i18n.language);
         setBackdrops(imageData?.backdrops || []);
         setPosters(imageData?.posters || []);
       } catch (error) {
@@ -27,46 +30,28 @@ const Media = ({ movieId }) => {
     };
 
     if (movieId) {
-      fetchMedia(); // Fetch media if movieId is available
+      fetchMedia();
     }
-  }, [movieId]);
+  }, [movieId, i18n.language]);
 
   if (!movieId) {
     return <div className="text-center p-4">No movie ID provided.</div>;
   }
+
+  const filterOptions = ['popular', 'videos', 'backdrops', 'posters'];
 
   return (
     <div className="bg-white dark:bg-gray-900 text-black dark:text-white min-h-screen">
       <div className="container mx-auto px-4 py-8">
         <h2 className="text-3xl font-bold mb-6">Media</h2>
 
-        {/* Section Navigation */}
-        <div className="flex flex-wrap space-x-4 mb-6">
-          <button
-            onClick={() => setSelectedSection('popular')}
-            className={`py-2 px-4 text-xl font-semibold rounded-t-lg transition-all ${selectedSection === 'popular' ? 'bg-gray-200 dark:bg-gray-700' : 'bg-gray-100 dark:bg-gray-800'}`}
-          >
-            Most Popular
-          </button>
-          <button
-            onClick={() => setSelectedSection('videos')}
-            className={`py-2 px-4 text-xl font-semibold rounded-t-lg transition-all ${selectedSection === 'videos' ? 'bg-gray-200 dark:bg-gray-700' : 'bg-gray-100 dark:bg-gray-800'}`}
-          >
-            Videos
-          </button>
-          <button
-            onClick={() => setSelectedSection('backdrops')}
-            className={`py-2 px-4 text-xl font-semibold rounded-t-lg transition-all ${selectedSection === 'backdrops' ? 'bg-gray-200 dark:bg-gray-700' : 'bg-gray-100 dark:bg-gray-800'}`}
-          >
-            Backdrops
-          </button>
-          <button
-            onClick={() => setSelectedSection('posters')}
-            className={`py-2 px-4 text-xl font-semibold rounded-t-lg transition-all ${selectedSection === 'posters' ? 'bg-gray-200 dark:bg-gray-700' : 'bg-gray-100 dark:bg-gray-800'}`}
-          >
-            Posters
-          </button>
-        </div>
+        {/* Filter Buttons Component */}
+        <FilterButtons
+          filterOptions={filterOptions}
+          currentFilter={selectedSection}
+          setFilter={setSelectedSection}
+          i18n={i18n}
+        />
 
         {/* Media Content */}
         <div>
@@ -74,6 +59,9 @@ const Media = ({ movieId }) => {
             <div>
               <h3 className="text-2xl font-semibold mb-4">Most Popular</h3>
               <div className="flex space-x-4 overflow-x-auto p-4">
+                {mostPopularVideos.length === 0 && (
+                  <p>No popular videos available.</p>
+                )}
                 {mostPopularVideos.slice(0, 5).map((video) => (
                   <iframe
                     key={video.id}
@@ -85,6 +73,9 @@ const Media = ({ movieId }) => {
                     className="rounded-lg shadow-lg"
                   ></iframe>
                 ))}
+                {backdrops.length === 0 && (
+                  <p>No backdrops available.</p>
+                )}
                 {backdrops.slice(0, 5).map((backdrop) => (
                   <img
                     key={backdrop.file_path}
@@ -93,6 +84,9 @@ const Media = ({ movieId }) => {
                     className="rounded-lg shadow-lg min-w-[200px] h-[120px] object-cover"
                   />
                 ))}
+                {posters.length === 0 && (
+                  <p>No posters available.</p>
+                )}
                 {posters.slice(0, 5).map((poster) => (
                   <img
                     key={poster.file_path}
@@ -109,6 +103,9 @@ const Media = ({ movieId }) => {
             <div>
               <h3 className="text-2xl font-semibold mb-4">Videos</h3>
               <div className="flex space-x-4 overflow-x-auto p-4">
+                {mostPopularVideos.length === 0 && (
+                  <p>No videos available.</p>
+                )}
                 {mostPopularVideos.map((video) => (
                   <iframe
                     key={video.id}
@@ -128,6 +125,9 @@ const Media = ({ movieId }) => {
             <div>
               <h3 className="text-2xl font-semibold mb-4">Backdrops</h3>
               <div className="flex space-x-4 overflow-x-auto p-4">
+                {backdrops.length === 0 && (
+                  <p>No backdrops available.</p>
+                )}
                 {backdrops.map((backdrop) => (
                   <img
                     key={backdrop.file_path}
@@ -144,6 +144,9 @@ const Media = ({ movieId }) => {
             <div>
               <h3 className="text-2xl font-semibold mb-4">Posters</h3>
               <div className="flex space-x-4 overflow-x-auto p-4">
+                {posters.length === 0 && (
+                  <p>No posters available.</p>
+                )}
                 {posters.map((poster) => (
                   <img
                     key={poster.file_path}

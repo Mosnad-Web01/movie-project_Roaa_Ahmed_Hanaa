@@ -4,13 +4,17 @@ import { useParams } from 'next/navigation';
 import { fetchFromTMDB } from '../../../lib/tmdbClient';
 import Image from 'next/image';
 import Link from 'next/link'; // استيراد Link للتنقل بين الصفحات
+import { FaTwitter, FaInstagram, FaFacebook } from 'react-icons/fa'; // استيراد أيقونات التواصل الاجتماعي من react-icons
 
 const PersonDetails = () => {
   const { id } = useParams(); // الحصول على معرف الممثل
   const [person, setPerson] = useState(null);
   const [credits, setCredits] = useState(null);
+  const [socialLinks, setSocialLinks] = useState(null); // روابط التواصل الاجتماعي
   const [isLoading, setIsLoading] = useState(true);
-  const [showFullBio, setShowFullBio] = useState(false); // حالة "اقرأ المزيد"
+  const [movieGenres, setMovieGenres] = useState({});
+  const [tvGenres, setTvGenres] = useState({});
+  const [showFullBio, setShowFullBio] = useState(false); // هنا يتم تعريف الحالة الخاصة بـ showFullBio
 
   useEffect(() => {
     if (id) {
@@ -19,9 +23,29 @@ const PersonDetails = () => {
           // جلب بيانات الممثل
           const personData = await fetchFromTMDB(`/person/${id}`);
           const creditsData = await fetchFromTMDB(`/person/${id}/combined_credits`);
-          if (personData && creditsData) {
+          const externalIds = await fetchFromTMDB(`/person/${id}/external_ids`); // جلب روابط التواصل الاجتماعي
+          
+          const movieGenresData = await fetchFromTMDB(`/genre/movie/list`);
+          const tvGenresData = await fetchFromTMDB(`/genre/tv/list`);
+          
+          if (personData && creditsData && externalIds && movieGenresData && tvGenresData) {
             setPerson(personData);
             setCredits(creditsData);
+            setSocialLinks(externalIds); // تخزين روابط التواصل الاجتماعي
+            
+            // حفظ الأنواع ككائنات للمطابقة السريعة
+            const movieGenresMap = {};
+            movieGenresData.genres.forEach(genre => {
+              movieGenresMap[genre.id] = genre.name;
+            });
+            setMovieGenres(movieGenresMap);
+
+            const tvGenresMap = {};
+            tvGenresData.genres.forEach(genre => {
+              tvGenresMap[genre.id] = genre.name;
+            });
+            setTvGenres(tvGenresMap);
+
             setIsLoading(false);
           }
         } catch (error) {
@@ -50,6 +74,34 @@ const PersonDetails = () => {
       return `${text.substring(0, length)}...`;
     }
     return text;
+  };
+
+  // دالة لاستخراج الأنواع (genres) لكل فيلم أو مسلسل
+  const getGenresForRole = (role) => {
+    const genreIds = role.genre_ids || [];
+    const genreNames = genreIds.map(genreId => {
+      if (role.media_type === 'movie') {
+        return movieGenres[genreId];
+      } else if (role.media_type === 'tv') {
+        return tvGenres[genreId];
+      }
+      return null;
+    }).filter(Boolean); // تجاهل القيم null
+    return genreNames.join(', ');
+  };
+
+  // دالة لاستخراج جميع الأنواع المتاحة في أعمال الشخص
+  const getAllGenres = () => {
+    const allGenreIds = new Set();
+    credits.cast.forEach(role => {
+      role.genre_ids?.forEach(id => allGenreIds.add(id));
+    });
+    
+    const allGenres = Array.from(allGenreIds).map(id => {
+      return movieGenres[id] || tvGenres[id];
+    }).filter(Boolean);
+
+    return allGenres.join(', ');
   };
 
   return (
@@ -95,11 +147,34 @@ const PersonDetails = () => {
               )}
             </div>
             <hr className="my-4" />
-            
-            {/* New Section: Genres */}
+
+            {/* Genres Section */}
             <div className="mb-4">
               <h3 className="text-lg font-semibold">Genres:</h3>
-              <p>{person.genres?.join(', ') || "No genres available."}</p>
+              <p>{getAllGenres() || "No genres available"}</p>
+            </div>
+            <hr className="my-4" />
+            
+            {/* Social Media Links */}
+            <div className="mb-4">
+              <h3 className="text-lg font-semibold">Follow {person.name}:</h3>
+              <div className="flex space-x-4 mt-2">
+                {socialLinks?.twitter_id && (
+                  <a href={`https://twitter.com/${socialLinks.twitter_id}`} target="_blank" rel="noopener noreferrer">
+                    <FaTwitter size={32} className="text-blue-500" />
+                  </a>
+                )}
+                {socialLinks?.instagram_id && (
+                  <a href={`https://instagram.com/${socialLinks.instagram_id}`} target="_blank" rel="noopener noreferrer">
+                    <FaInstagram size={32} className="text-pink-500" />
+                  </a>
+                )}
+                {socialLinks?.facebook_id && (
+                  <a href={`https://facebook.com/${socialLinks.facebook_id}`} target="_blank" rel="noopener noreferrer">
+                    <FaFacebook size={32} className="text-blue-600" />
+                  </a>
+                )}
+              </div>
             </div>
 
             {/* Acting Section */}
@@ -120,6 +195,9 @@ const PersonDetails = () => {
                         className="rounded-lg"
                       />
                       <p className="mt-2 text-center">{role.title || role.name}</p>
+                      <p className="text-center text-gray-400 text-sm">
+                        {getGenresForRole(role)}
+                      </p> {/* عرض الأنواع */}
                     </div>
                   </Link>
                 ))}

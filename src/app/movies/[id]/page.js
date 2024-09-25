@@ -10,6 +10,8 @@ import Media from './media/Media';
 import Recommendations from './recommendations/Recommendations';
 import { FaList, FaHeart, FaEye, FaStar, FaPlay } from 'react-icons/fa';
 import ReactModal from 'react-modal';
+import useAuth from '../../../lib/useAuth';
+import { useTranslation } from 'react-i18next'; // استيراد مكتبة i18next للترجمة
 
 const MovieDetails = () => {
   const { id } = useParams();
@@ -19,14 +21,21 @@ const MovieDetails = () => {
   const [trailerKey, setTrailerKey] = useState('');
   const [isOverviewExpanded, setIsOverviewExpanded] = useState(false);
   const [overviewTooLong, setOverviewTooLong] = useState(false);
+  const { i18n } = useTranslation(); // جلب اللغة الحالية من i18next
 
   useEffect(() => {
     if (id) {
       const fetchMovieDetails = async () => {
         try {
-          const data = await fetchFromTMDB(`/movie/${id}`);
+          // إضافة اللغة إلى الفيتش
+          const data = await fetchFromTMDB(`/movie/${id}`, i18n.language);
           if (data) {
             setMovie(data);
+
+            // Fetch credits to get the director
+            const credits = await fetchFromTMDB(`/movie/${id}/credits`, i18n.language);
+            const director = credits.crew.find(member => member.job === 'Director');
+            data.director = director ? director : null; // Add director info to movie object
 
             // Check if the overview is too long
             const overviewLengthThreshold = 300; // Adjust the threshold as needed
@@ -35,7 +44,7 @@ const MovieDetails = () => {
             }
 
             // Fetch trailers
-            const videos = await fetchFromTMDB(`/movie/${id}/videos`);
+            const videos = await fetchFromTMDB(`/movie/${id}/videos`, i18n.language);
             const trailer = videos.results.find(video => video.type === 'Trailer');
             if (trailer) {
               setTrailerKey(trailer.key);
@@ -52,7 +61,7 @@ const MovieDetails = () => {
       console.error("No movie ID found.");
       setIsLoading(false);
     }
-  }, [id]);
+  }, [id, i18n.language]); // إضافة i18n.language كمراقب
 
   const openModal = () => setModalIsOpen(true);
   const closeModal = () => setModalIsOpen(false);
@@ -87,11 +96,17 @@ const MovieDetails = () => {
               <h1 className="text-3xl md:text-4xl font-bold mb-2">
                 {movie.title} ({new Date(movie.release_date).getFullYear()})
               </h1>
-              <p className="text-md md:text-lg mb-4">Release Date: {new Date(movie.release_date).toLocaleDateString()}</p>
-              <p className="text-md md:text-lg mb-4">Runtime: {Math.floor(movie.runtime / 60)}h {movie.runtime % 60}m</p>
-              <p className="text-md md:text-lg mb-4">Language: {movie.original_language.toUpperCase()}</p>
-              <p className="text-md md:text-lg mb-4">Rating: {movie.vote_average} ({movie.vote_count} votes)</p>
-              <p className="text-md md:text-lg mb-4">Director: {movie.director ? movie.director.name : 'N/A'}</p>
+              {/* عرض نوع الفيلم هنا */}
+              {movie.genres && movie.genres.length > 0 && (
+                <p className="text-md md:text-lg mb-4">
+                  {i18n.t('Genres')}: {movie.genres.map(genre => genre.name).join(', ')}
+                </p>
+              )}
+              <p className="text-md md:text-lg mb-4">{i18n.t('Release Date')}: {new Date(movie.release_date).toLocaleDateString()}</p>
+              <p className="text-md md:text-lg mb-4">{i18n.t('Runtime')}: {Math.floor(movie.runtime / 60)}h {movie.runtime % 60}m</p>
+              <p className="text-md md:text-lg mb-4">{i18n.t('Language')}: {movie.original_language.toUpperCase()}</p>
+              <p className="text-md md:text-lg mb-4">{i18n.t('Rating')}: {movie.vote_average} ({movie.vote_count} votes)</p>
+              <p className="text-md md:text-lg mb-4">{i18n.t('Director')}: {movie.director ? movie.director.name : 'N/A'}</p>
               <p className={`text-md md:text-lg mb-4 ${!isOverviewExpanded && overviewTooLong ? 'line-clamp-3' : ''}`}>
                 {movie.overview}
               </p>
@@ -100,14 +115,14 @@ const MovieDetails = () => {
                   onClick={toggleOverview}
                   className="text-blue-500 hover:underline mt-4"
                 >
-                  {isOverviewExpanded ? 'Read Less' : 'Read More'}
+                  {isOverviewExpanded ? i18n.t('Read Less') : i18n.t('Read More')}
                 </button>
               )}
 
               {/* Production Companies */}
               {movie.production_companies && movie.production_companies.length > 0 && (
                 <div className="mt-8">
-                  <h2 className="text-xl md:text-2xl font-bold mb-2">Production Companies</h2>
+                  <h2 className="text-xl md:text-2xl font-bold mb-2">{i18n.t('Production Companies')}</h2>
                   <div className="flex flex-wrap gap-6">
                     {movie.production_companies.map(company => (
                       <div key={company.id} className="flex items-center mb-4">
@@ -130,16 +145,16 @@ const MovieDetails = () => {
               <div className="mt-8">
                 <ul className="flex flex-wrap sm:flex-nowrap space-x-4">
                   <li className="px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer flex items-center">
-                    <FaList className="mr-2" /> Add to list
+                    <FaList className="mr-2" /> {i18n.t('Add to list')}
                   </li>
                   <li className="px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer flex items-center">
-                    <FaHeart className="mr-2" /> Favorite
+                    <FaHeart className="mr-2" /> {i18n.t('Favorite')}
                   </li>
                   <li className="px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer flex items-center">
-                    <FaEye className="mr-2" /> Watchlist
+                    <FaEye className="mr-2" /> {i18n.t('Watchlist')}
                   </li>
                   <li className="px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer flex items-center">
-                    <FaStar className="mr-2" /> Your rating
+                    <FaStar className="mr-2" /> {i18n.t('Your rating')}
                   </li>
                 </ul>
               </div>
@@ -148,7 +163,7 @@ const MovieDetails = () => {
                 onClick={openModal}
                 className="bg-gray-700 dark:hover:bg-gray-500 text-white rounded-full py-2 px-6 mt-8 flex items-center justify-center hover:bg-gray-900 border border-gray-700"
               >
-                <FaPlay className="mr-2" /> Play Trailer
+                <FaPlay className="mr-2" /> {i18n.t('Play Trailer')}
               </button>
             </div>
           </div>
@@ -165,7 +180,7 @@ const MovieDetails = () => {
         {/* Full Cast & Crew */}
         <section className="mt-8">
           <Link href={`/movies/${id}/full-cast`} className="text-black dark:text-white text-lg font-semibold border-b-2 border-black dark:border-white inline-block pb-1">
-            Full Cast & Crew
+            {i18n.t('Full Cast & Crew')}
           </Link>
         </section>
 
@@ -173,52 +188,39 @@ const MovieDetails = () => {
         <hr className="my-8 border-t border-gray-300 dark:border-gray-700" />
 
         {/* Social Options */}
-        <section className="text-left">
+        <section className="text-lg mt-8">
           <SocialOptions movieId={id} />
         </section>
-
-        {/* Media Section */}
-        <section className="mt-8">
+        
+          {/* Media Section */}
+          <section className="mt-8">
           <Media movieId={id} />
         </section>
 
-        {/* Recommendations Section */}
-        <section>
+        {/* Recommendations */}
+        <section className="mt-8">
           <Recommendations movieId={id} />
         </section>
-
-        {/* Trailer Modal */}
-        <ReactModal
-          isOpen={modalIsOpen}
-          onRequestClose={closeModal}
-          contentLabel="Trailer"
-          className="fixed inset-0 flex items-center justify-center z-50"
-          overlayClassName="fixed inset-0 bg-black bg-opacity-70"
-        >
-          {trailerKey ? (
-            <div className="relative w-full max-w-3xl sm:max-w-xs">
-              <button
-                onClick={closeModal}
-                className="absolute top-2 right-2 text-white text-2xl"
-              >
-                ×
-              </button>
-              <iframe
-                width="100%"
-                height="500"
-                className="sm:h-48 h-500" // الحجم الكبير يبقى افتراضيًا
-                src={`https://www.youtube.com/embed/${trailerKey}`}
-                title="Trailer"
-                frameBorder="0"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowFullScreen
-              ></iframe>
-            </div>
-          ) : (
-            <div className="text-white">Trailer not available</div>
-          )}
+        
+        
+        {/* Modal for Trailer */}
+        <ReactModal isOpen={modalIsOpen} onRequestClose={closeModal}>
+          <div className="relative">
+            <button onClick={closeModal} className="absolute top-4 right-4 text-gray-700 hover:text-gray-900">
+              &times;
+            </button>
+            <h2 className="text-lg font-bold mb-4">{i18n.t('Trailer')}</h2>
+            <iframe
+              width="100%"
+              height="400"
+              src={`https://www.youtube.com/embed/${trailerKey}`}
+              title={movie.title}
+              frameBorder="0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+            />
+          </div>
         </ReactModal>
-
       </div>
     </div>
   );

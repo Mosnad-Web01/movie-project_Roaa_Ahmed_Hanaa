@@ -1,86 +1,68 @@
+// src/components/FreeToWatch.js
+
 "use client";
 import React, { useEffect, useState } from 'react';
 import { fetchFromTMDB } from '../lib/tmdbClient';
 import MovieCard from './MovieCard';
-import useAuth from '../lib/useAuth';// تأكد من المسار الصحيح
-
+import useAuth from '../lib/useAuth';
+import { useTranslation } from 'react-i18next'; // استيراد useTranslation
+import ScrollableMovieList from './ScrollableMovieList'; // استيراد ScrollableMovieList
+import FilterButtons from './FilterButtons'; // استيراد FilterButtons
+import { motion } from 'framer-motion'; // استيراد framer-motion
 
 const FreeToWatch = () => {
   const [content, setContent] = useState([]);
-  const [timeRange, setTimeRange] = useState('week');
-  const [filter, setFilter] = useState('movie');
+  const [filter, setFilter] = useState('movie'); // حالة الفلتر (فيلم أو مسلسل)
   const [dropdownVisible, setDropdownVisible] = useState(null);
-  const user = useAuth(); // جلب المستخدم
-  const isLoggedIn = !!user; // إذا كان المستخدم موجودًا، يعني أنه مسجل الدخول
+  const user = useAuth();
+  const isLoggedIn = !!user;
+  const { i18n } = useTranslation(); // استخدام i18n
 
   useEffect(() => {
     const fetchContent = async () => {
-      const endpoint = filter === 'movie' ? `/trending/movie/${timeRange}` : `/trending/tv/${timeRange}`;
-      const data = await fetchFromTMDB(endpoint);
-      console.log('Fetched content:', data); // Log data to verify structure
+      const endpoint = filter === 'movie' ? `/trending/movie/week` : `/trending/tv/week`; // استرجاع المحتوى بناءً على الفلتر
+      const data = await fetchFromTMDB(endpoint, i18n.language); // تمرير اللغة
       if (data) {
         setContent(data.results);
       }
     };
 
     fetchContent();
-  }, [timeRange, filter]);
+  }, [filter, i18n.language]); // إضافة i18n.language
 
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (dropdownVisible !== null) {
-        setDropdownVisible(null);
-      }
-    };
-
-    window.addEventListener('click', handleClickOutside);
-    return () => {
-      window.removeEventListener('click', handleClickOutside);
-    };
-  }, [dropdownVisible]);
-
+  // تابع لتفعيل القائمة المنسدلة
   const toggleDropdown = (id, event) => {
-    event.stopPropagation(); // Prevent closing the dropdown when clicking inside
+    event.stopPropagation(); // منع إغلاق القائمة عند النقر داخلها
     setDropdownVisible(dropdownVisible === id ? null : id);
   };
 
   return (
-    <div className="px-6 py-4 bg-white dark:bg-gray-900 text-black dark:text-white">
+    <motion.div
+      className="px-6 py-4 bg-white dark:bg-gray-900 text-black dark:text-white"
+      initial={{ opacity: 0, x: -50 }} // تأثير الدخول
+      animate={{ opacity: 1, x: 0 }} // تأثير الدخول
+      transition={{ duration: 0.5 }} // مدة التأثير
+    >
       <div className="flex flex-col sm:flex-row justify-between items-center mb-6">
-        <h2 className="text-3xl font-bold mb-4 sm:mb-0">Free to Watch</h2>
+        <h2 className="text-3xl font-bold mb-4 sm:mb-0">{i18n.t('Free to Watch')}</h2> {/* استخدام الترجمة */}
 
-        <div className="flex flex-wrap gap-2 mt-4 sm:mt-0">
-          <button
-            onClick={() => setFilter('movie')}
-            className={`px-4 py-2 rounded-full ${filter === 'movie' ? 'bg-gradient-to-r from-blue-500 to-green-500 text-white hover:bg-gradient-to-bl focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium' : 'bg-gray-700 border border-gray-700 text-gray-200'}`}
-          >
-            Movies
-          </button>
-          <button
-            onClick={() => setFilter('tv')}
-            className={`px-4 py-2 rounded-full ${filter === 'tv' ? 'bg-gradient-to-r from-blue-500 to-green-500 text-white hover:bg-gradient-to-bl focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium' : 'bg-gray-700 border border-gray-700 text-gray-200'}`}
-          >
-            TV
-          </button>
-        </div>
+        {/* استدعاء مكون الأزرار */}
+        <FilterButtons
+          filterOptions={['movie', 'tv']}
+          currentFilter={filter}
+          setFilter={setFilter}
+          i18n={i18n}
+        />
       </div>
 
-      <div className="relative">
-        <div className="overflow-x-auto scrollbar-hide">
-          <div className="flex flex-nowrap space-x-4" style={{ width: content.length * 300 }}>
-            {content.map(item => (
-              <MovieCard
-                key={item.id}
-                item={item}
-                isLoggedIn={isLoggedIn} // تمرير حالة تسجيل الدخول
-                toggleDropdown={(event) => toggleDropdown(item.id, event)}
-                dropdownVisible={dropdownVisible === item.id}
-              />
-            ))}
-          </div>
-        </div>
-      </div>
-    </div>
+      {/* استدعاء مكون شريط التمرير */}
+      <ScrollableMovieList
+        content={content}
+        isLoggedIn={isLoggedIn}
+        toggleDropdown={toggleDropdown}
+        dropdownVisible={dropdownVisible}
+      />
+    </motion.div>
   );
 };
 

@@ -1,17 +1,20 @@
+// src/app/tv/[id]/recommendations/Recommendations.js
 import React, { useEffect, useState } from 'react';
 import { fetchFromTMDB } from '../../../../lib/tmdbClient';
-import Link from 'next/link';
-import Image from 'next/image';
+import { useTranslation } from 'react-i18next'; // استيراد مكتبة i18next للترجمة
+import ScrollableMovieList from '../../../../components/ScrollableMovieList'; // استيراد ScrollableMovieList
 
 const Recommendations = ({ showId }) => {
   const [recommendations, setRecommendations] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const { t, i18n } = useTranslation(); // جلب دالة الترجمة واللغة الحالية
 
   useEffect(() => {
     if (showId) {
       const fetchRecommendations = async () => {
         try {
-          const data = await fetchFromTMDB(`/tv/${showId}/recommendations`);
+          // جلب البيانات من TMDB مع تمرير اللغة
+          const data = await fetchFromTMDB(`/tv/${showId}/recommendations`, i18n.language);
           if (data && data.results) {
             setRecommendations(data.results);
           }
@@ -23,35 +26,25 @@ const Recommendations = ({ showId }) => {
       };
       fetchRecommendations();
     }
-  }, [showId]);
+  }, [showId, i18n.language]); // تأكد من إعادة تشغيل الفيتش عند تغيير اللغة
 
   if (isLoading) {
-    return <div>Loading recommendations...</div>;
+    return <div>{t('Loading recommendations...')}</div>; // استخدام الترجمة للعبارة
   }
 
   if (!recommendations.length) {
-    return <div>No recommendations available.</div>;
+    return <div>{t('No recommendations available.')}</div>; // استخدام الترجمة للعبارة
   }
 
   return (
     <div className="mt-8">
-      <h2 className="text-2xl font-bold mb-4">Recommended TV Shows</h2>
-      <div className="flex space-x-4 overflow-x-auto no-scrollbar">
-        {recommendations.map((show) => (
-          <div key={show.id} className="min-w-[150px] bg-gray-100 dark:bg-gray-800 rounded-lg shadow-lg p-2 flex-shrink-0">
-            <Link href={`/tv/${show.id}`}>
-              <Image
-                src={`https://image.tmdb.org/t/p/w500${show.poster_path}`}
-                alt={show.name}
-                width={150}
-                height={225}
-                className="rounded-md object-cover"
-              />
-              <h3 className="text-sm mt-2 font-semibold text-center">{show.name}</h3>
-            </Link>
-          </div>
-        ))}
-      </div>
+      <h2 className="text-2xl font-bold mb-4">{t('Recommended TV Shows')}</h2> {/* استخدام الترجمة للعنوان */}
+      <ScrollableMovieList 
+        content={recommendations} 
+        isLoggedIn={false} // تمرير قيمة حالة تسجيل الدخول المناسبة
+        toggleDropdown={() => {}} // تمرير دالة فارغة أو دالة مناسبة لإدارة قائمة dropdown
+        dropdownVisible={null} // أو تمرير قيمة مناسبة حسب الحاجة
+      />
     </div>
   );
 };

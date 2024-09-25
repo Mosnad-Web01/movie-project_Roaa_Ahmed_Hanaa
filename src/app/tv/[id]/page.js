@@ -1,4 +1,4 @@
-"use client";
+"use client"; // Define this component as a client component in Next.js
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import { fetchFromTMDB } from '../../../lib/tmdbClient';
@@ -10,9 +10,11 @@ import Media from './media/Media'; // Ensure this component exists
 import Recommendations from './recommendations/Recommendations'; // Ensure this component exists
 import { FaList, FaHeart, FaEye, FaStar, FaPlay } from 'react-icons/fa';
 import ReactModal from 'react-modal';
+import { useTranslation } from 'react-i18next'; // Import i18next for translation
 
 const TVShowDetails = () => {
   const { id } = useParams();
+  const { t, i18n } = useTranslation(); // Get translation function and current language
   const [show, setShow] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [modalIsOpen, setModalIsOpen] = useState(false);
@@ -23,12 +25,11 @@ const TVShowDetails = () => {
     if (id) {
       const fetchShowDetails = async () => {
         try {
-          const data = await fetchFromTMDB(`/tv/${id}`);
+          const data = await fetchFromTMDB(`/tv/${id}`, i18n.language); // Pass language to fetch function
           if (data) {
             setShow(data);
-
             // Fetch trailers
-            const videos = await fetchFromTMDB(`/tv/${id}/videos`);
+            const videos = await fetchFromTMDB(`/tv/${id}/videos`, i18n.language); // Pass language to fetch function
             const trailer = videos.results.find(video => video.type === 'Trailer');
             if (trailer) {
               setTrailerKey(trailer.key);
@@ -45,7 +46,7 @@ const TVShowDetails = () => {
       console.error("No TV show ID found.");
       setIsLoading(false);
     }
-  }, [id]);
+  }, [id, i18n.language]); // Add language as a dependency
 
   const openModal = () => setModalIsOpen(true);
   const closeModal = () => setModalIsOpen(false);
@@ -53,11 +54,11 @@ const TVShowDetails = () => {
   const toggleOverview = () => setIsOverviewExpanded(!isOverviewExpanded);
 
   if (isLoading) {
-    return <div>Loading...</div>;
+    return <div>{t('Loading')}...</div>; // Translated loading text
   }
 
   if (!show) {
-    return <div>No TV show details found.</div>;
+    return <div>{t('No TV show details found')}.</div>; // Translated not found text
   }
 
   return (
@@ -80,16 +81,21 @@ const TVShowDetails = () => {
               <h1 className="text-3xl md:text-4xl font-bold mb-2">
                 {show.name} ({new Date(show.first_air_date).getFullYear()})
               </h1>
-              <p className="text-md md:text-lg mb-4">Release Date: {new Date(show.first_air_date).toLocaleDateString()}</p>
+              {/* Display genres */}
+              {show.genres && show.genres.length > 0 && (
+                <p className="text-md md:text-lg mb-4">
+                  {t('Genres')}: {show.genres.map(genre => genre.name).join(', ')}
+                </p>
+              )}
+              <p className="text-md md:text-lg mb-4">{t('Release Date')}: {new Date(show.first_air_date).toLocaleDateString()}</p>
               <p className="text-md md:text-lg mb-4">
-                Runtime: {show.episode_run_time && show.episode_run_time.length > 0 
+                {t('Runtime')}: {show.episode_run_time && show.episode_run_time.length > 0 
                   ? `${Math.floor(show.episode_run_time[0] / 60)}h ${show.episode_run_time[0] % 60}m` 
                   : 'N/A'}
               </p>
-
-              <p className="text-md md:text-lg mb-4">Language: {show.original_language.toUpperCase()}</p>
-              <p className="text-md md:text-lg mb-4">Rating: {show.vote_average} ({show.vote_count} votes)</p>
-              <p className="text-md md:text-lg mb-4">Creator: {show.created_by && show.created_by.length > 0 ? show.created_by.map(creator => creator.name).join(', ') : 'N/A'}</p>
+              <p className="text-md md:text-lg mb-4">{t('Language')}: {show.original_language.toUpperCase()}</p>
+              <p className="text-md md:text-lg mb-4">{t('Rating')}: {show.vote_average} ({show.vote_count} {t('votes')})</p>
+              <p className="text-md md:text-lg mb-4">{t('Creator')}: {show.created_by && show.created_by.length > 0 ? show.created_by.map(creator => creator.name).join(', ') : 'N/A'}</p>
               <p className={`text-md md:text-lg mb-4 ${!isOverviewExpanded ? 'line-clamp-3' : ''}`}>
                 {show.overview}
               </p>
@@ -97,13 +103,13 @@ const TVShowDetails = () => {
                 onClick={toggleOverview}
                 className="text-blue-500 hover:underline mt-4"
               >
-                {isOverviewExpanded ? 'Read Less' : 'Read More'}
+                {isOverviewExpanded ? t('Read Less') : t('Read More')}
               </button>
 
               {/* Production Companies */}
               {show.production_companies && show.production_companies.length > 0 && (
                 <div className="mt-8">
-                  <h2 className="text-xl md:text-2xl font-bold mb-2">Production Companies</h2>
+                  <h2 className="text-xl md:text-2xl font-bold mb-2">{t('Production Companies')}</h2>
                   <div className="flex flex-wrap gap-6">
                     {show.production_companies.map(company => (
                       <div key={company.id} className="flex items-center mb-4">
@@ -126,16 +132,16 @@ const TVShowDetails = () => {
               <div className="mt-8">
                 <ul className="flex flex-col sm:flex-row sm:space-x-4 space-y-4 sm:space-y-0">
                   <li className="px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer flex items-center">
-                    <FaList className="mr-2" /> Add to list
+                    <FaList className="mr-2" /> {t('Add to list')}
                   </li>
                   <li className="px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer flex items-center">
-                    <FaHeart className="mr-2" /> Favorite
+                    <FaHeart className="mr-2" /> {t('Favorite')}
                   </li>
                   <li className="px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer flex items-center">
-                    <FaEye className="mr-2" /> Watchlist
+                    <FaEye className="mr-2" /> {t('Watchlist')}
                   </li>
                   <li className="px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer flex items-center">
-                    <FaStar className="mr-2" /> Your rating
+                    <FaStar className="mr-2" /> {t('Your rating')}
                   </li>
                 </ul>
               </div>
@@ -144,7 +150,7 @@ const TVShowDetails = () => {
                 onClick={openModal}
                 className="bg-gray-700 dark:hover:bg-gray-500 text-white rounded-full py-2 px-6 mt-8 flex items-center justify-center hover:bg-gray-900 border border-gray-700"
               >
-                <FaPlay className="mr-2" /> Play Trailer
+                <FaPlay className="mr-2" /> {t('Play Trailer')}
               </button>
             </div>
           </div>
@@ -161,7 +167,7 @@ const TVShowDetails = () => {
         {/* Full Cast & Crew */}
         <section className="mt-8">
           <Link href={`/tv/${id}/full-cast`} className="text-black dark:text-white text-lg font-semibold border-b-2 border-black dark:border-white inline-block pb-1">
-            Full Cast & Crew
+            {t('Full Cast & Crew')}
           </Link>
         </section>
 
@@ -187,8 +193,8 @@ const TVShowDetails = () => {
         <ReactModal
           isOpen={modalIsOpen}
           onRequestClose={closeModal}
-          contentLabel="Trailer"
-          className="fixed inset-0 flex items-center justify-center z-50"
+          contentLabel={t('Trailer')}
+          className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50"
           overlayClassName="fixed inset-0 bg-black bg-opacity-70"
         >
           {trailerKey ? (

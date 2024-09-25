@@ -1,11 +1,13 @@
 "use client";
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { FaSearch, FaUser, FaMoon, FaSun, FaBars, FaTimes } from 'react-icons/fa';
+import { FaSearch, FaUser, FaMoon, FaSun, FaBars, FaTimes, FaGlobe } from 'react-icons/fa'; 
+import { useTranslation } from 'react-i18next';
 import NavbarDropdown from './NavbarDropdown';
 import { signOut } from '../lib/firebase';
 import useAuth from '../lib/useAuth';
+import i18n from '../lib/translationConfig';
 
 const Navbar = () => {
   const [darkMode, setDarkMode] = useState(false);
@@ -13,7 +15,18 @@ const Navbar = () => {
   const [searchVisible, setSearchVisible] = useState(false);
   const [searchInput, setSearchInput] = useState('');
   const [userMenuVisible, setUserMenuVisible] = useState(false);
+  const [languageMenuVisible, setLanguageMenuVisible] = useState(false); 
+  const [language, setLanguage] = useState('en');
+  const [loading, setLoading] = useState(false); // حالة التحميل
   const user = useAuth();
+  const { t } = useTranslation();
+
+  useEffect(() => {
+    const savedLanguage = localStorage.getItem('preferredLanguage') || 'en';
+    setLanguage(savedLanguage);
+    i18n.changeLanguage(savedLanguage);
+    document.documentElement.lang = savedLanguage;
+  }, []);
 
   const toggleDarkMode = () => {
     setDarkMode(!darkMode);
@@ -31,7 +44,7 @@ const Navbar = () => {
   };
 
   const handleSignOut = async () => {
-    const confirmed = window.confirm("Are you sure you want to log out?");
+    const confirmed = window.confirm(t('Are you sure you want to log out?'));
     if (confirmed) {
       try {
         await signOut();
@@ -42,6 +55,23 @@ const Navbar = () => {
     }
   };
 
+  const toggleLanguage = () => {
+    const newLanguage = language === 'en' ? 'ar' : 'en';
+    setLanguage(newLanguage);
+    i18n.changeLanguage(newLanguage);
+    document.documentElement.lang = newLanguage;
+    localStorage.setItem('preferredLanguage', newLanguage);
+  };
+
+  const toggleLanguageMenu = () => {
+    setLanguageMenuVisible(!languageMenuVisible);
+  };
+
+  const handleLinkClick = (href) => {
+    setLoading(true); // تعيين حالة التحميل عند الضغط على رابط
+    window.location.href = href;
+  };
+
   return (
     <nav className="p-4 flex items-center justify-between bg-gray-900 dark:bg-gray-800 text-gray-200 dark:text-white">
       <div className="flex items-center space-x-6">
@@ -49,31 +79,30 @@ const Navbar = () => {
           <Image src="/images/logo.svg" alt="Logo" width={100} height={40} />
         </Link>
         <div className="hidden md:flex space-x-6">
-          {/* رابط الصفحة الرئيسية Home */}
-          <a href="/" className="text-xl font-semibold hover:underline">
-            Home
-          </a>
+          <Link href="/" className="text-xl font-semibold hover:underline">
+            {t('Home')}
+          </Link>
           <NavbarDropdown
-            title="Movies"
+            title={t('Movies')}
             links={[
-              { label: 'Popular', href: '/PopularMovies' },
-              { label: 'Now Playing', href: '/NowPlaying' },
-              { label: 'Upcoming', href: '/UpcomingMovies' },
-              { label: 'Top Rated', href: '/TopRatedMovies' },
-            ]}
+              { label: t('Popular'), href: '/PopularMovies' },
+              { label: t('Now Playing'), href: '/NowPlaying' },
+              { label: t('Upcoming'), href: '/UpcomingMovies' },
+              { label: t('Top Rated'), href: '/TopRatedMovies' },
+            ].map(link => ({ ...link, onClick: () => handleLinkClick(link.href) }))} // إضافة onClick
           />
           <NavbarDropdown
-            title="TV Shows"
+            title={t('TV Shows')}
             links={[
-              { label: 'Popular', href: '/PopularTVShows' },
-              { label: 'Airing Today', href: '/AiringToday' },
-              { label: 'On TV', href: '/OnTV' },
-              { label: 'Top Rated', href: '/TopRatedTVShows' },
-            ]}
+              { label: t('Popular'), href: '/PopularTVShows' },
+              { label: t('Airing Today'), href: '/AiringToday' },
+              { label: t('On TV'), href: '/OnTV' },
+              { label: t('Top Rated'), href: '/TopRatedTVShows' },
+            ].map(link => ({ ...link, onClick: () => handleLinkClick(link.href) }))} // إضافة onClick
           />
           <NavbarDropdown
-            title="People"
-            links={[{ label: 'Popular People', href: '/PopularPeople' }]}
+            title={t('People')}
+            links={[{ label: t('Popular People'), href: '/PopularPeople', onClick: () => handleLinkClick('/PopularPeople') }]} // إضافة onClick
           />
         </div>
         <button className="md:hidden p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700" onClick={toggleMobileMenu}>
@@ -81,34 +110,33 @@ const Navbar = () => {
         </button>
       </div>
 
-      {/* القائمة المنسدلة للجوال */}
+      {/* Mobile Menu */}
       <div className={`fixed inset-0 bg-gray-900 dark:bg-gray-800 text-gray-200 dark:text-white z-50 transition-transform transform ${isMobileMenuOpen ? 'translate-x-0' : 'translate-x-full'} md:hidden`}>
         <div className="flex flex-col items-center p-4 space-y-4 relative">
           <button className="absolute top-4 right-4 p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700" onClick={toggleMobileMenu}>
             <FaTimes className="text-xl" />
           </button>
-          
           <NavbarDropdown
-            title="Movies"
+            title={t('Movies')}
             links={[
-              { label: 'Popular', href: '/PopularMovies' },
-              { label: 'Now Playing', href: '/NowPlaying' },
-              { label: 'Upcoming', href: '/UpcomingMovies' },
-              { label: 'Top Rated', href: '/TopRatedMovies' },
+              { label: t('Popular'), href: '/PopularMovies', onClick: () => handleLinkClick('/PopularMovies') },
+              { label: t('Now Playing'), href: '/NowPlaying', onClick: () => handleLinkClick('/NowPlaying') },
+              { label: t('Upcoming'), href: '/UpcomingMovies', onClick: () => handleLinkClick('/UpcomingMovies') },
+              { label: t('Top Rated'), href: '/TopRatedMovies', onClick: () => handleLinkClick('/TopRatedMovies') },
             ]}
           />
           <NavbarDropdown
-            title="TV Shows"
+            title={t('TV Shows')}
             links={[
-              { label: 'Popular', href: '/PopularTVShows' },
-              { label: 'Airing Today', href: '/AiringToday' },
-              { label: 'On TV', href: '/OnTV' },
-              { label: 'Top Rated', href: '/TopRatedTVShows' },
+              { label: t('Popular'), href: '/PopularTVShows', onClick: () => handleLinkClick('/PopularTVShows') },
+              { label: t('Airing Today'), href: '/AiringToday', onClick: () => handleLinkClick('/AiringToday') },
+              { label: t('On TV'), href: '/OnTV', onClick: () => handleLinkClick('/OnTV') },
+              { label: t('Top Rated'), href: '/TopRatedTVShows', onClick: () => handleLinkClick('/TopRatedTVShows') },
             ]}
           />
           <NavbarDropdown
-            title="People"
-            links={[{ label: 'Popular People', href: '/PopularPeople' }]}
+            title={t('People')}
+            links={[{ label: t('Popular People'), href: '/PopularPeople', onClick: () => handleLinkClick('/PopularPeople') }]}
           />
         </div>
       </div>
@@ -116,7 +144,7 @@ const Navbar = () => {
       <div className="flex items-center space-x-4 relative">
         {!user ? (
           <Link href="/Login" className="text-gray-200 hover:text-gray-400">
-            Log In
+            {t('Log In')}
           </Link>
         ) : (
           <>
@@ -124,65 +152,57 @@ const Navbar = () => {
               <FaUser className="text-xl" />
             </button>
             {userMenuVisible && (
-  <div className="absolute right-0 top-12 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg z-50">
-    <div className="p-3 border-b dark:border-gray-700">
-      <p className="text-gray-700 dark:text-gray-300">Logged in as:</p>
-      <p className="font-semibold text-gray-800 dark:text-gray-200 break-words">
-        {user.email}
-      </p>
-    </div>
-
-   {/* 
-<ul>
-  <li>
-    <Link href="/Favorite" className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
-      Favorite
-    </Link>
-  </li>
-  <li>
-    <Link href="/Watchlist" className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
-      Watchlist
-    </Link>
-  </li>
-  <li>
-    <Link href="/YourRating" className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
-      Your Rating
-    </Link>
-  </li>
-</ul>
-*/}
-
-    <div className="p-3 border-t dark:border-gray-700">
-      <button onClick={handleSignOut} className="w-full text-left text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 px-4 py-2 text-sm">
-        Log Out
-      </button>
-    </div>
-  </div>
-)}
-
+              <div className="absolute right-0 top-12 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg z-50">
+                <div className="p-3 border-b dark:border-gray-700">
+                  <p className="text-gray-700 dark:text-gray-300">{t('Logged in as')}:</p>
+                  <p className="font-semibold text-gray-800 dark:text-gray-200 break-words">
+                    {user.email}
+                  </p>
+                </div>
+                <div className="p-3 border-t dark:border-gray-700">
+                  <button onClick={handleSignOut} className="w-full text-left text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 px-4 py-2 text-sm">
+                    {t('Log Out')}
+                  </button>
+                </div>
+              </div>
+            )}
           </>
         )}
+
         <button className="p-2 rounded-full hover:bg-gray-600 dark:hover:bg-gray-700" onClick={() => setSearchVisible(!searchVisible)}>
           <FaSearch className="text-xl" />
         </button>
         {searchVisible && (
-          <div className="absolute top-12 right-0 bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg p-2 flex items-center space-x-2 z-50">
+          <div className="absolute top-12 right-0 bg-gray-100 dark:bg-gray-700 rounded-lg shadow-lg z-50">
             <input
               type="text"
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
-              placeholder="Search..."
-              className="p-2 border border-transparent rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400"
+              onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+              className="p-2 w-48 dark:bg-gray-800 dark:text-white rounded-lg"
+              placeholder={t('Search...')}
             />
-            <button onClick={handleSearch} className="p-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-400">
-              Search
+          </div>
+        )}
+        <button className="p-2 rounded-full hover:bg-gray-600 dark:hover:bg-gray-700" onClick={toggleDarkMode}>
+          {darkMode ? <FaSun className="text-xl" /> : <FaMoon className="text-xl" />}
+        </button>
+        <button className="p-2 rounded-full hover:bg-gray-600 dark:hover:bg-gray-700" onClick={toggleLanguageMenu}>
+          <FaGlobe className="text-xl" />
+        </button>
+        {languageMenuVisible && (
+          <div className="absolute right-0 top-12 w-32 bg-white dark:bg-gray-800 rounded-lg shadow-lg z-50">
+            <button onClick={toggleLanguage} className="w-full text-left text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 px-4 py-2 text-sm">
+              {language === 'en' ? 'العربية' : 'English'}
             </button>
           </div>
         )}
-        <button onClick={toggleDarkMode} className="p-2 rounded-full hover:bg-gray-600 dark:hover:bg-gray-700">
-          {darkMode ? <FaSun className="text-xl text-white" /> : <FaMoon className="text-xl text-gray-200 dark:text-white" />}
-        </button>
       </div>
+      {loading && (
+        <div className="fixed inset-0 bg-gray-800 bg-opacity-50 flex items-center justify-center z-50">
+          <div className="animate-spin h-10 w-10 border-4 border-t-4 border-t-transparent rounded-full" />
+        </div>
+      )}
     </nav>
   );
 };
