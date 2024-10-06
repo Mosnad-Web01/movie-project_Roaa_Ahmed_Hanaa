@@ -11,7 +11,9 @@ import Recommendations from './recommendations/Recommendations';
 import { FaList, FaHeart, FaEye, FaStar, FaPlay } from 'react-icons/fa';
 import ReactModal from 'react-modal';
 import useAuth from '../../../lib/useAuth';
-import { useTranslation } from 'react-i18next'; // استيراد مكتبة i18next للترجمة
+import { useTranslation } from 'react-i18next';
+import MovieActions from '../../../components/MovieActions'; 
+import TrailerModal from '../../../components/TrailerModal'; // استيراد مكتبة i18next للترجمة
 
 const MovieDetails = () => {
   const { id } = useParams();
@@ -43,19 +45,19 @@ const MovieDetails = () => {
               setOverviewTooLong(true);
             }
 
-            // Fetch trailers
-            const videos = await fetchFromTMDB(`/movie/${id}/videos`, i18n.language);
-            const trailer = videos.results.find(video => video.type === 'Trailer');
-            if (trailer) {
-              setTrailerKey(trailer.key);
+                // Fetch trailers
+                const videos = await fetchFromTMDB(`/movie/${id}/videos`, i18n.language);
+                const trailer = videos.results.find(video => video.type === 'Trailer');
+                if (trailer) {
+                  setTrailerKey(trailer.key);
+                }
+              }
+              setIsLoading(false);
+            } catch (error) {
+              console.error("Failed to fetch movie details:", error);
+              setIsLoading(false);
             }
-          }
-          setIsLoading(false);
-        } catch (error) {
-          console.error("Failed to fetch movie details:", error);
-          setIsLoading(false);
-        }
-      };
+          };
       fetchMovieDetails();
     } else {
       console.error("No movie ID found.");
@@ -80,84 +82,99 @@ const MovieDetails = () => {
     <div className="bg-white dark:bg-gray-900 text-black dark:text-white min-h-screen">
       <div className="container mx-auto px-4 py-8">
         {/* Movie details */}
-        <section className="mb-12">
-          <div className="flex flex-col lg:flex-row">
-            <div className="w-full lg:w-1/4 mb-8 lg:mb-0">
-              <Image
-                src={`https://image.tmdb.org/t/p/w500${movie.poster_path}`}
-                alt={movie.title}
-                width={300}
-                height={450}
-                className="rounded-lg shadow-lg"
-                layout="responsive"
-              />
-            </div>
-            <div className="w-full lg:w-3/4 lg:ml-8">
-              <h1 className="text-3xl md:text-4xl font-bold mb-2">
-                {movie.title} ({new Date(movie.release_date).getFullYear()})
-              </h1>
-              {/* عرض نوع الفيلم هنا */}
-              {movie.genres && movie.genres.length > 0 && (
-                <p className="text-md md:text-lg mb-4">
-                  {i18n.t('Genres')}: {movie.genres.map(genre => genre.name).join(', ')}
-                </p>
-              )}
-              <p className="text-md md:text-lg mb-4">{i18n.t('Release Date')}: {new Date(movie.release_date).toLocaleDateString()}</p>
-              <p className="text-md md:text-lg mb-4">{i18n.t('Runtime')}: {Math.floor(movie.runtime / 60)}h {movie.runtime % 60}m</p>
-              <p className="text-md md:text-lg mb-4">{i18n.t('Language')}: {movie.original_language.toUpperCase()}</p>
-              <p className="text-md md:text-lg mb-4">{i18n.t('Rating')}: {movie.vote_average} ({movie.vote_count} votes)</p>
-              <p className="text-md md:text-lg mb-4">{i18n.t('Director')}: {movie.director ? movie.director.name : 'N/A'}</p>
-              <p className={`text-md md:text-lg mb-4 ${!isOverviewExpanded && overviewTooLong ? 'line-clamp-3' : ''}`}>
-                {movie.overview}
-              </p>
-              {overviewTooLong && (
-                <button
-                  onClick={toggleOverview}
-                  className="text-blue-500 hover:underline mt-4"
-                >
-                  {isOverviewExpanded ? i18n.t('Read Less') : i18n.t('Read More')}
-                </button>
-              )}
+        <section
+  className="relative"
+  style={{
+    backgroundImage: `url(https://image.tmdb.org/t/p/original${movie.backdrop_path})`,
+    backgroundSize: 'cover',
+    backgroundPosition: 'center',
+    backgroundRepeat: 'no-repeat',
+    width: '99.4vw',
+    marginLeft: 'calc(-50vw + 50%)',
+    marginRight: 'calc(-50vw + 50%)',
+    marginTop: 'calc(-50.5vw + 50%)',
+    opacity: 0.8,
+  }}
+>
+  {/* الطبقة الشفافة */}
+  <div
+    className="absolute inset-0 bg-white"
+    style={{ opacity: '0.5', zIndex: 1 }}
+  ></div>
 
-              {/* Production Companies */}
-              {movie.production_companies && movie.production_companies.length > 0 && (
-                <div className="mt-8">
-                  <h2 className="text-xl md:text-2xl font-bold mb-2">{i18n.t('Production Companies')}</h2>
-                  <div className="flex flex-wrap gap-6">
-                    {movie.production_companies.map(company => (
-                      <div key={company.id} className="flex items-center mb-4">
-                        {company.logo_path && (
-                          <Image
-                            src={`https://image.tmdb.org/t/p/w200${company.logo_path}`}
-                            alt={company.name}
-                            width={100}
-                            height={50}
-                            className="mr-4"
-                          />
-                        )}
-                        <p className="text-md md:text-lg">{company.name}</p>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
+  {/* المحتوى فوق الخلفية */}
+  <div className="relative z-10 flex flex-col lg:flex-row bg-opacity-75 bg-black p-8 rounded-lg shadow-lg">
+    <div className="w-full lg:w-1/4 mb-8 lg:mb-0">
+      <Image
+        src={`https://image.tmdb.org/t/p/w500${movie.poster_path}`}
+        alt={movie.title}
+        width={300}
+        height={450}
+        className="rounded-lg shadow-lg"
+        layout="responsive"
+      />
+    </div>
+    <div className="w-full lg:w-3/4 lg:ml-8 text-white">
+      <h1 className="text-3xl md:text-4xl font-bold mb-2">
+        {movie.title} ({new Date(movie.release_date).getFullYear()})
+      </h1>
+      {movie.genres && movie.genres.length > 0 && (
+        <p className="text-md md:text-lg mb-4">
+          {i18n.t('Genres')}: {movie.genres.map(genre => genre.name).join(', ')}
+        </p>
+      )}
+      <p className="text-md md:text-lg mb-4">
+        {i18n.t('Release Date')}: {new Date(movie.release_date).toLocaleDateString()}
+      </p>
+      <p className="text-md md:text-lg mb-4">
+        {i18n.t('Runtime')}: {Math.floor(movie.runtime / 60)}h {movie.runtime % 60}m
+      </p>
+      <p className="text-md md:text-lg mb-4">
+        {i18n.t('Language')}: {movie.original_language.toUpperCase()}
+      </p>
+      <p className="text-md md:text-lg mb-4">
+        {i18n.t('Rating')}: {movie.vote_average} ({movie.vote_count} votes)
+      </p>
+      <p className="text-md md:text-lg mb-4">
+        {i18n.t('Director')}: {movie.director ? movie.director.name : 'N/A'}
+      </p>
+      <p className={`text-md md:text-lg mb-4 ${!isOverviewExpanded && overviewTooLong ? 'line-clamp-3' : ''}`}>
+        {movie.overview}
+      </p>
+      {overviewTooLong && (
+        <button onClick={toggleOverview} className="text-blue-500 hover:underline mt-4">
+          {isOverviewExpanded ? i18n.t('Read Less') : i18n.t('Read More')}
+        </button>
+      )}
 
-              <div className="mt-8">
-                <ul className="flex flex-wrap sm:flex-nowrap space-x-4">
-                  <li className="px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer flex items-center">
-                    <FaList className="mr-2" /> {i18n.t('Add to list')}
-                  </li>
-                  <li className="px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer flex items-center">
-                    <FaHeart className="mr-2" /> {i18n.t('Favorite')}
-                  </li>
-                  <li className="px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer flex items-center">
-                    <FaEye className="mr-2" /> {i18n.t('Watchlist')}
-                  </li>
-                  <li className="px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer flex items-center">
-                    <FaStar className="mr-2" /> {i18n.t('Your rating')}
-                  </li>
-                </ul>
+      {/* شركات الإنتاج */}
+      {movie.production_companies && movie.production_companies.length > 0 && (
+        <div className="mt-8">
+          <h2 className="text-xl md:text-2xl font-bold mb-2">
+            {i18n.t('Production Companies')}
+          </h2>
+          <div className="flex flex-wrap gap-6">
+            {movie.production_companies.map(company => (
+              <div key={company.id} className="flex items-center mb-4">
+                {company.logo_path && (
+                  <Image
+                    src={`https://image.tmdb.org/t/p/w200${company.logo_path}`}
+                    alt={company.name}
+                    width={100}
+                    height={50}
+                    className="mr-4"
+                  />
+                )}
+                <p className="text-md md:text-lg">{company.name}</p>
               </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      
+        {/* تمرير movieId إلى MovieActions */}
+        <MovieActions movieId={id} />
 
               <button
                 onClick={openModal}
@@ -168,6 +185,7 @@ const MovieDetails = () => {
             </div>
           </div>
         </section>
+
 
         {/* Cast section */}
         <section>

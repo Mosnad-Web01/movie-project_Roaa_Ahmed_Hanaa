@@ -36,7 +36,7 @@ const Recommendations = ({ movieId }) => {
   }
 
   return (
-    <div className="no-margin"> {/* إضافة الكلاس الجديد هنا */}
+    <div className="mt-0"> {/* إضافة الكلاس الجديد هنا لإزالة الهامش العلوي */}
       <h2 className="text-2xl font-bold mb-4">{t('Recommended Movies')}</h2> {/* استخدام الترجمة للعنوان */}
       <ScrollableMovieList 
         content={recommendations} 
@@ -45,7 +45,8 @@ const Recommendations = ({ movieId }) => {
         dropdownVisible={null} // أو تمرير قيمة مناسبة حسب الحاجة
       />
     </div>
-  );
+);
+
 };
 
 export default Recommendations;

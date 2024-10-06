@@ -3,29 +3,34 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import { fetchFromTMDB } from '../../../../lib/tmdbClient';
+import ShowHeader from '../../../../components/ShowHeader';
 
 const Reviews = () => {
   const { id } = useParams();
   const [reviews, setReviews] = useState([]);
+  const [show, setShow] = useState(null); // إضافة حالة show
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    const fetchReviews = async () => {
+    const fetchData = async () => {
       try {
-        const data = await fetchFromTMDB(`/tv/${id}/reviews`);
-        if (data && data.results) {
-          setReviews(data.results);
+        const reviewsData = await fetchFromTMDB(`/tv/${id}/reviews`);
+        if (reviewsData && reviewsData.results) {
+          setReviews(reviewsData.results);
         }
+
+        const showData = await fetchFromTMDB(`/tv/${id}`); // جلب بيانات العرض
+        setShow(showData); // تعيين بيانات العرض
       } catch (error) {
-        console.error("Failed to fetch reviews:", error);
+        console.error("Failed to fetch data:", error);
         setError("Failed to fetch reviews");
       } finally {
         setIsLoading(false);
       }
     };
 
-    fetchReviews();
+    fetchData();
   }, [id]);
 
   if (isLoading) {
@@ -38,6 +43,7 @@ const Reviews = () => {
 
   return (
     <div className="bg-white dark:bg-gray-900 text-black dark:text-white min-h-screen p-4">
+        {show && <ShowHeader show={show} />}
       <div className="container mx-auto max-w-4xl">
         <h1 className="text-3xl font-bold mb-6">TV Show Reviews</h1>
         <p className="text-lg mb-4">

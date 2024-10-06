@@ -1,7 +1,7 @@
 "use client";
 import React, { useEffect, useState } from 'react';
 import { fetchFromTMDB } from '../../lib/tmdbClient';
-import Link from 'next/link';
+import ActorCard from '../../components/ActorCard';
 
 const PopularPeople = () => {
   const [popularPeople, setPopularPeople] = useState([]);
@@ -40,26 +40,7 @@ const PopularPeople = () => {
     <div className="p-6 dark:bg-gray-900">
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
         {currentPeople.map(person => (
-          <div key={person.id} className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden">
-            <Link href={`/people/${person.id}`}>
-              <img
-                src={`https://image.tmdb.org/t/p/w500${person.profile_path}`}
-                alt={person.name}
-                className="w-full h-[350px] object-cover"
-              />
-              <div className="p-4">
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">{person.name}</h3>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
-                  {person.known_for.map((work, index) => (
-                    <span key={index}>
-                      {work.title || work.name}
-                      {index < person.known_for.length - 1 && ', '}
-                    </span>
-                  ))}
-                </p>
-              </div>
-            </Link>
-          </div>
+          <ActorCard key={person.id} person={person} isLoggedIn={true} />
         ))}
       </div>
 

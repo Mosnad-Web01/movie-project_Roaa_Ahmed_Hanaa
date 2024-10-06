@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { fetchFromTMDB } from '../../../../lib/tmdbClient';
+import ShowHeader from '../../../../components/ShowHeader';
 
 const Discussions = () => {
   const { id } = useParams();
@@ -37,6 +38,7 @@ const Discussions = () => {
 
   return (
     <div className="bg-white dark:bg-gray-900 text-black dark:text-white min-h-screen">
+        {show && <ShowHeader show={show} />}
       <div className="container mx-auto px-4 py-8 max-w-4xl">
         {/* Header Section */}
         <section className="mb-8">
@@ -56,6 +58,7 @@ const Discussions = () => {
 
         {/* General Discussions Table */}
         <section className="mb-8">
+      
           <nav aria-label="Breadcrumb">
             <ol className="flex flex-wrap space-x-2 text-lg mb-4">
               <li><Link href="#" className="text-gray-600 dark:text-gray-300 hover:text-blue-500">Discuss</Link></li>

@@ -1,111 +1,191 @@
 import React, { useState, useEffect } from 'react';
-import { FaHeart, FaEye, FaStar } from 'react-icons/fa';
+import { FaList, FaHeart, FaStar, FaEye } from 'react-icons/fa'; 
 import useAuth from '../lib/useAuth';
 
 const DropdownMenu = ({ itemId, itemType, itemName, itemPoster }) => {
-  const user = useAuth(); // الحصول على معلومات المستخدم
-
-  // تحقق إذا كان العنصر مضافًا إلى القوائم
+  const user = useAuth();  // Get the current authenticated user
+  const [isAdded, setIsAdded] = useState(false);
   const [isFavorite, setIsFavorite] = useState(false);
-  const [isWatchlisted, setIsWatchlisted] = useState(false);
-  const [rating, setRating] = useState(0); // حالة لتخزين التقييم
+  const [isWatchlist, setIsWatchlist] = useState(false);
+  const [userRating, setUserRating] = useState(0);
+  const [lists, setLists] = useState([]); // Store available lists
+  const [newListName, setNewListName] = useState(''); // Store the name of the new list
+  const [selectedList, setSelectedList] = useState(''); // Store the selected list
 
+  // Fetch stored data from localStorage
   useEffect(() => {
-    // تحقق من وجود العنصر في التخزين المحلي للقوائم
-    const favorites = JSON.parse(localStorage.getItem('favorites')) || {};
-    const watchlist = JSON.parse(localStorage.getItem('watchlist')) || {};
-    const ratings = JSON.parse(localStorage.getItem('ratings')) || {};
+    const listData = JSON.parse(localStorage.getItem('list')) || [];
+    const favoriteData = JSON.parse(localStorage.getItem('favorites')) || [];
+    const watchlistData = JSON.parse(localStorage.getItem('watchlist')) || [];
+    const ratingData = JSON.parse(localStorage.getItem('ratings')) || {};
+    const storedLists = JSON.parse(localStorage.getItem('lists')) || [];
 
-    setIsFavorite(!!favorites[itemType]?.find(item => item.id === itemId));
-    setIsWatchlisted(!!watchlist[itemType]?.find(item => item.id === itemId));
-    
-    // تعيين التقييم إذا كان موجودًا مسبقًا في التخزين المحلي
-    const storedRating = ratings[itemType]?.find(item => item.id === itemId)?.rating || 0;
-    setRating(storedRating);
-  }, [itemId, itemType]);
+    setIsAdded(Array.isArray(listData) && listData.some(item => item.id === itemId));
+    setIsFavorite(Array.isArray(favoriteData) && favoriteData.some(item => item.id === itemId));
+    setIsWatchlist(Array.isArray(watchlistData) && watchlistData.some(item => item.id === itemId));
+    setUserRating(ratingData[itemId] || 0);
+    setLists(storedLists);
+  }, [itemId]);
 
-  const handleLocalStorageAction = (actionType) => {
-    if (!user) {
-      alert('Please log in to perform this action.');
-      return;
+  const handleAddToList = () => {
+    if (!user) return alert('You need to be logged in!');
+
+    let listData = JSON.parse(localStorage.getItem(selectedList) || '[]');
+
+    console.log("Current selected list:", selectedList); // Check selected list
+    console.log("List data before update:", listData); // Check existing list data
+
+    // Check if item is already added to the selected list
+    if (isAdded) {
+        const updatedList = listData.filter(item => item.id !== itemId);
+        localStorage.setItem(selectedList, JSON.stringify(updatedList));
+        setIsAdded(false);
+    } else {
+        const newItem = {
+            id: itemId,
+            name: itemName,
+            type: itemType,
+            poster: itemPoster,
+            media_type: itemType
+        };
+        listData.push(newItem); // Add new item to the list
+        localStorage.setItem(selectedList, JSON.stringify(listData)); // Store updated list
+        setIsAdded(true);
     }
+    
+    console.log("List data after update:", JSON.parse(localStorage.getItem(selectedList))); // Check updated list data
+};
 
-    const listKey = actionType === 'Favorite' || actionType === 'RemoveFavorite' ? 'favorites' : 'watchlist';
-    const list = JSON.parse(localStorage.getItem(listKey)) || {};
-    const updatedList = list[itemType] || [];
+  // Handle creating a new list
+  const handleCreateNewList = () => {
+    if (!newListName) return alert('Please enter a list name');
+    
+    let newLists = [...lists, newListName];
+    setLists(newLists);
+    setSelectedList(newListName);
+    localStorage.setItem('lists', JSON.stringify(newLists));
+    setNewListName('');
+  };
 
-    if (actionType === 'Favorite') {
-      updatedList.push({ id: itemId, name: itemName, poster: itemPoster });
-      localStorage.setItem(listKey, JSON.stringify({ ...list, [itemType]: updatedList }));
-      setIsFavorite(true);
-    } else if (actionType === 'RemoveFavorite') {
-      const filteredList = updatedList.filter(item => item.id !== itemId);
-      localStorage.setItem(listKey, JSON.stringify({ ...list, [itemType]: filteredList }));
+  const handleAddToFavorites = () => {
+    if (!user) return alert('You need to be logged in!');
+
+    let favoriteData = JSON.parse(localStorage.getItem('favorites') || '[]');
+    if (!Array.isArray(favoriteData)) favoriteData = [];
+
+    if (isFavorite) {
+      const updatedFavorites = favoriteData.filter(item => item.id !== itemId);
+      localStorage.setItem('favorites', JSON.stringify(updatedFavorites));
       setIsFavorite(false);
-    } else if (actionType === 'Watchlist') {
-      updatedList.push({ id: itemId, name: itemName, poster: itemPoster });
-      localStorage.setItem(listKey, JSON.stringify({ ...list, [itemType]: updatedList }));
-      setIsWatchlisted(true);
-    } else if (actionType === 'RemoveWatchlist') {
-      const filteredList = updatedList.filter(item => item.id !== itemId);
-      localStorage.setItem(listKey, JSON.stringify({ ...list, [itemType]: filteredList }));
-      setIsWatchlisted(false);
+    } else {
+      favoriteData.push({ 
+        id: itemId, 
+        name: itemName, 
+        type: itemType, 
+        poster: itemPoster, 
+        media_type: itemType
+      });
+      localStorage.setItem('favorites', JSON.stringify(favoriteData));
+      setIsFavorite(true);
     }
   };
 
-  const handleLocalStorageRating = (star) => {
-    if (!user) {
-      alert('Please log in to rate this item.');
-      return;
-    }
+  const handleAddToWatchlist = () => {
+    if (!user) return alert('You need to be logged in!');
 
-    // تحديث حالة التقييم وحفظها في التخزين المحلي
-    const ratings = JSON.parse(localStorage.getItem('ratings')) || {};
-    const updatedRatings = ratings[itemType] || [];
+    let watchlistData = JSON.parse(localStorage.getItem('watchlist') || '[]');
+    if (!Array.isArray(watchlistData)) watchlistData = [];
 
-    // تحديث أو إضافة التقييم
-    const itemIndex = updatedRatings.findIndex(item => item.id === itemId);
-    if (itemIndex !== -1) {
-      updatedRatings[itemIndex].rating = star;
+    if (isWatchlist) {
+      const updatedWatchlist = watchlistData.filter(item => item.id !== itemId);
+      localStorage.setItem('watchlist', JSON.stringify(updatedWatchlist));
+      setIsWatchlist(false);
     } else {
-      updatedRatings.push({ id: itemId, rating: star });
+      watchlistData.push({ 
+        id: itemId, 
+        name: itemName, 
+        type: itemType, 
+        poster: itemPoster, 
+        media_type: itemType
+      });
+      localStorage.setItem('watchlist', JSON.stringify(watchlistData));
+      setIsWatchlist(true);
     }
+  };
 
-    localStorage.setItem('ratings', JSON.stringify({ ...ratings, [itemType]: updatedRatings }));
-    setRating(star);
+  const handleRating = (rating) => {
+    if (!user) return alert('You need to be logged in!');
+
+    const ratingData = JSON.parse(localStorage.getItem('ratings') || '{}');
+    if (userRating === rating) {
+      delete ratingData[itemId];
+      setUserRating(0);
+    } else {
+      ratingData[itemId] = rating;
+      setUserRating(rating);
+    }
+    localStorage.setItem('ratings', JSON.stringify(ratingData));
   };
 
   return (
-    <div className="relative">
-      <div className="absolute right-0 mt-2 w-40 bg-white dark:bg-gray-800 text-black dark:text-white rounded-lg shadow-lg z-50">
-        <ul>
-          <li
-            className={`px-3 py-2 text-sm hover:bg-gray-500 cursor-pointer flex items-center ${isFavorite ? 'text-red-500' : ''}`}
-            onClick={() => handleLocalStorageAction(isFavorite ? 'RemoveFavorite' : 'Favorite')}
-          >
-            <FaHeart className={`mr-2 ${isFavorite ? 'text-red-400' : ''}`} />
-            {isFavorite ? 'Remove from Favorites' : 'Add to Favorites'}
-          </li>
-          <li
-            className={`px-3 py-2 text-sm hover:bg-gray-500 cursor-pointer flex items-center ${isWatchlisted ? 'text-blue-500' : ''}`}
-            onClick={() => handleLocalStorageAction(isWatchlisted ? 'RemoveWatchlist' : 'Watchlist')}
-          >
-            <FaEye className={`mr-2 ${isWatchlisted ? 'text-blue-400' : ''}`} />
-            {isWatchlisted ? 'Remove from Watchlist' : 'Add to Watchlist'}
-          </li>
-          <li className="px-3 py-2 text-sm hover:bg-gray-500 cursor-pointer flex items-center">
-            <FaStar className="mr-2" /> Your rating
-            <div className="flex">
-              {[1, 2, 3, 4, 5].map((star) => (
-                <FaStar
-                  key={star}
-                  className={`cursor-pointer ${rating >= star ? 'text-yellow-400' : 'text-gray-300'}`}
-                  onClick={() => handleLocalStorageRating(star)}
-                />
-              ))}
-            </div>
-          </li>
-        </ul>
+    <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 shadow-lg rounded-md p-2">
+      <div className="mb-2">
+        <select 
+          value={selectedList} 
+          onChange={(e) => setSelectedList(e.target.value)} 
+          className="w-full p-2 border rounded-md"
+        >
+          <option value="">Select a list</option>
+          {lists.map((list, index) => (
+            <option key={index} value={list}>{list}</option>
+          ))}
+        </select>
+      </div>
+
+      <div className="flex mb-2">
+        <input 
+          type="text" 
+          placeholder="New list name" 
+          value={newListName} 
+          onChange={(e) => setNewListName(e.target.value)} 
+          className="w-full p-2 border rounded-md"
+        />
+        <button 
+          onClick={handleCreateNewList} 
+          className="p-2 bg-blue-500 text-white rounded-md ml-2"
+        >
+          Create
+        </button>
+      </div>
+
+      <button 
+        onClick={handleAddToList} 
+        className="flex items-center w-full p-2 hover:bg-gray-100 dark:hover:bg-gray-700"
+        disabled={!selectedList}
+      >
+        <FaList className={`mr-2 ${isAdded ? 'text-gray-500' : ''}`} />
+        {isAdded ? 'Already in List' : 'Add to List'}
+      </button>
+
+      <button onClick={handleAddToFavorites} className="flex items-center w-full p-2 hover:bg-gray-100 dark:hover:bg-gray-700">
+        <FaHeart className={`mr-2 ${isFavorite ? 'text-gray-500' : ''}`} />
+        {isFavorite ? 'Already in Favorites' : 'Add to Favorites'}
+      </button>
+
+      <button onClick={handleAddToWatchlist} className="flex items-center w-full p-2 hover:bg-gray-100 dark:hover:bg-gray-700">
+        <FaEye className={`mr-2 ${isWatchlist ? 'text-gray-500' : ''}`} />
+        {isWatchlist ? 'Already in Watchlist' : 'Add to Watchlist'}
+      </button>
+
+      <div className="flex items-center w-full p-2">
+        <span className="mr-2">Your Rating:</span>
+        {[1, 2, 3, 4, 5].map(star => (
+          <FaStar
+            key={star}
+            className={`mr-1 cursor-pointer ${star <= userRating ? 'text-yellow-500' : 'text-gray-400'}`}
+            onClick={() => handleRating(star)}
+          />
+        ))}
       </div>
     </div>
   );

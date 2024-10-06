@@ -13,6 +13,7 @@ const ScrollableMovieList = ({ content, isLoggedIn, toggleDropdown, dropdownVisi
               key={item.id}
               item={item}
               isLoggedIn={isLoggedIn}
+              media_type={item.media_type} // تأكد من تمرير media_type
               toggleDropdown={(event) => toggleDropdown(item.id, event)}
               dropdownVisible={dropdownVisible === item.id}
             />
@@ -20,7 +21,6 @@ const ScrollableMovieList = ({ content, isLoggedIn, toggleDropdown, dropdownVisi
         </div>
       </div>
     </div>
-
   );
 };
 

@@ -1,8 +1,8 @@
+// src/app/tv/[id]/cast/page.js
 "use client";
 import React, { useEffect, useState } from 'react';
-import { fetchFromTMDB } from '../../../../lib/tmdbClient'; // تأكد من مسار استيراد tmdbClient
-import Image from 'next/image';
-import Link from 'next/link'; // استيراد Link للتنقل بين الصفحات
+import { fetchFromTMDB } from '../../../../lib/tmdbClient';
+import ScrollableActorList from '../../../../components/ScrollableActorList'; // تأكد من المسار الصحيح
 
 const Cast = ({ showId }) => {
   const [cast, setCast] = useState([]);
@@ -37,23 +37,12 @@ const Cast = ({ showId }) => {
   return (
     <div className="mt-8">
       <h2 className="text-2xl font-bold mb-4">Cast</h2>
-      <div className="flex overflow-x-auto space-x-4 scrollbar-hide">
-        {cast.map((actor) => (
-          <Link key={actor.id} href={`/people/${actor.id}`} passHref>
-            <div className="min-w-[150px] bg-gray-100 dark:bg-gray-800 rounded-lg shadow-md p-4 text-center cursor-pointer">
-              <Image
-                src={`https://image.tmdb.org/t/p/w200${actor.profile_path}`}
-                alt={actor.name}
-                width={100}
-                height={150}
-                className="rounded-lg"
-              />
-              <p className="mt-2 text-sm font-semibold">{actor.name}</p>
-              <p className="text-xs text-gray-500">{actor.character}</p>
-            </div>
-          </Link>
-        ))}
-      </div>
+      <ScrollableActorList 
+        actors={cast} // تمرير قائمة الممثلين هنا
+        isLoggedIn={false} // يمكنك ضبط حالة تسجيل الدخول كما تحتاج
+        toggleDropdown={() => {}} // أضف وظيفة لإدارة القائمة المنسدلة إذا لزم الأمر
+        dropdownVisible={null} // ضبط حالة القائمة المنسدلة
+      />
     </div>
   );
 };

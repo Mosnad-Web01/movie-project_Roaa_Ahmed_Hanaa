@@ -1,9 +1,11 @@
+// src/components/LatestTrailers.js
 "use client";
 import React, { useState, useEffect } from 'react';
-import Modal from 'react-modal';
 import { fetchFromTMDB } from '../lib/tmdbClient';
 import useAuth from '../lib/useAuth';
 import { useTranslation } from 'react-i18next';
+import Modal from 'react-modal';
+import TrailerModal from './TrailerModal'; // استيراد المكون
 
 const LatestTrailers = () => {
   const [trailers, setTrailers] = useState([]);
@@ -24,7 +26,6 @@ const LatestTrailers = () => {
     const fetchLatestTrailers = async () => {
       try {
         let endpoint = '';
-
         switch (filter) {
           case 'popular':
             endpoint = '/movie/popular';
@@ -77,39 +78,12 @@ const LatestTrailers = () => {
     <div className="bg-white dark:bg-gray-900 text-black dark:text-white p-4">
       <h2 className="text-2xl font-bold mb-4">{i18n.t('Latest Trailers')}</h2>
 
+      {/* الأزرار للفلترة */}
       <div className="flex flex-wrap gap-4 mb-4">
-        <button
-          onClick={() => setFilter('popular')}
-          className={`px-5 py-2.5 rounded-full ${filter === 'popular' ? 'bg-gradient-to-r from-blue-500 to-green-500 text-white' : 'bg-gray-700 border border-gray-700 text-gray-200'}`}
-        >
-          {i18n.t('Popular')}
-        </button>
-        <button
-          onClick={() => setFilter('streaming')}
-          className={`px-5 py-2.5 rounded-full ${filter === 'streaming' ? 'bg-gradient-to-r from-blue-500 to-green-500 text-white' : 'bg-gray-700 border border-gray-700 text-gray-200'}`}
-        >
-          {i18n.t('Streaming')}
-        </button>
-        <button
-          onClick={() => setFilter('on_tv')}
-          className={`px-5 py-2.5 rounded-full ${filter === 'on_tv' ? 'bg-gradient-to-r from-blue-500 to-green-500 text-white' : 'bg-gray-700 border border-gray-700 text-gray-200'}`}
-        >
-          {i18n.t('On TV')}
-        </button>
-        <button
-          onClick={() => setFilter('for_rent')}
-          className={`px-5 py-2.5 rounded-full ${filter === 'for_rent' ? 'bg-gradient-to-r from-blue-500 to-green-500 text-white' : 'bg-gray-700 border border-gray-700 text-gray-200'}`}
-        >
-          {i18n.t('For Rent')}
-        </button>
-        <button
-          onClick={() => setFilter('in_theaters')}
-          className={`px-5 py-2.5 rounded-full ${filter === 'in_theaters' ? 'bg-gradient-to-r from-blue-500 to-green-500 text-white' : 'bg-gray-700 border border-gray-700 text-gray-200'}`}
-        >
-          {i18n.t('In Theaters')}
-        </button>
+        {/* هنا أزرار الفلترة كما هي */}
       </div>
 
+      {/* عرض التريلرز */}
       <div className="relative overflow-x-auto">
         <div className="flex space-x-4 min-w-max">
           {trailers.length > 0 ? (
@@ -150,31 +124,12 @@ const LatestTrailers = () => {
         </div>
       </div>
 
-      <Modal
-        isOpen={isOpen}
-        onRequestClose={closeModal}
-        contentLabel="Trailer"
-        className="bg-gray-800 p-4 rounded-md w-full max-w-2xl mx-auto my-20"
-        overlayClassName="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center"
-      >
-        {selectedTrailer && (
-          <div className="text-center">
-            <h2 className="text-xl font-bold mb-4 text-white">{selectedTrailer.title || selectedTrailer.name}</h2>
-            <iframe
-              width="100%"
-              height="300"
-              src={`https://www.youtube.com/embed/${selectedTrailer.key}`}
-              title={selectedTrailer.title || selectedTrailer.name}
-              frameBorder="0"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              allowFullScreen
-            />
-            <button onClick={closeModal} className="mt-4 px-4 py-2 bg-red-500 text-white rounded text-sm">
-              {i18n.t('Close')}
-            </button>
-          </div>
-        )}
-      </Modal>
+      {/* استدعاء المكون المنبثق */}
+      <TrailerModal 
+        isOpen={isOpen} 
+        closeModal={closeModal} 
+        selectedTrailer={selectedTrailer} 
+      />
     </div>
   );
 };

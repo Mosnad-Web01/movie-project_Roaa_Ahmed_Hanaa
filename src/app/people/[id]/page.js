@@ -3,27 +3,27 @@ import React, { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import { fetchFromTMDB } from '../../../lib/tmdbClient';
 import Image from 'next/image';
-import Link from 'next/link'; // استيراد Link للتنقل بين الصفحات
-import { FaTwitter, FaInstagram, FaFacebook } from 'react-icons/fa'; // استيراد أيقونات التواصل الاجتماعي من react-icons
+import Link from 'next/link'; 
+import { FaTwitter, FaInstagram, FaFacebook } from 'react-icons/fa';
+import ScrollableMovieList from '../../../components/ScrollableMovieList'; // استيراد المكون
 
 const PersonDetails = () => {
-  const { id } = useParams(); // الحصول على معرف الممثل
+  const { id } = useParams();
   const [person, setPerson] = useState(null);
   const [credits, setCredits] = useState(null);
-  const [socialLinks, setSocialLinks] = useState(null); // روابط التواصل الاجتماعي
+  const [socialLinks, setSocialLinks] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [movieGenres, setMovieGenres] = useState({});
   const [tvGenres, setTvGenres] = useState({});
-  const [showFullBio, setShowFullBio] = useState(false); // هنا يتم تعريف الحالة الخاصة بـ showFullBio
+  const [showFullBio, setShowFullBio] = useState(false);
 
   useEffect(() => {
     if (id) {
       const fetchPersonDetails = async () => {
         try {
-          // جلب بيانات الممثل
           const personData = await fetchFromTMDB(`/person/${id}`);
           const creditsData = await fetchFromTMDB(`/person/${id}/combined_credits`);
-          const externalIds = await fetchFromTMDB(`/person/${id}/external_ids`); // جلب روابط التواصل الاجتماعي
+          const externalIds = await fetchFromTMDB(`/person/${id}/external_ids`);
           
           const movieGenresData = await fetchFromTMDB(`/genre/movie/list`);
           const tvGenresData = await fetchFromTMDB(`/genre/tv/list`);
@@ -31,9 +31,8 @@ const PersonDetails = () => {
           if (personData && creditsData && externalIds && movieGenresData && tvGenresData) {
             setPerson(personData);
             setCredits(creditsData);
-            setSocialLinks(externalIds); // تخزين روابط التواصل الاجتماعي
+            setSocialLinks(externalIds);
             
-            // حفظ الأنواع ككائنات للمطابقة السريعة
             const movieGenresMap = {};
             movieGenresData.genres.forEach(genre => {
               movieGenresMap[genre.id] = genre.name;
@@ -68,7 +67,6 @@ const PersonDetails = () => {
     return <div>No person details found.</div>;
   }
 
-  // دالة لعرض نص مقطوع إذا كان طويلًا جدًا
   const truncateText = (text, length) => {
     if (text.length > length) {
       return `${text.substring(0, length)}...`;
@@ -76,7 +74,6 @@ const PersonDetails = () => {
     return text;
   };
 
-  // دالة لاستخراج الأنواع (genres) لكل فيلم أو مسلسل
   const getGenresForRole = (role) => {
     const genreIds = role.genre_ids || [];
     const genreNames = genreIds.map(genreId => {
@@ -86,11 +83,10 @@ const PersonDetails = () => {
         return tvGenres[genreId];
       }
       return null;
-    }).filter(Boolean); // تجاهل القيم null
+    }).filter(Boolean);
     return genreNames.join(', ');
   };
 
-  // دالة لاستخراج جميع الأنواع المتاحة في أعمال الشخص
   const getAllGenres = () => {
     const allGenreIds = new Set();
     credits.cast.forEach(role => {
@@ -177,31 +173,16 @@ const PersonDetails = () => {
               </div>
             </div>
 
-            {/* Acting Section */}
+            {/* Acting Section with ScrollableMovieList */}
             <div className="mt-8">
               <h2 className="text-2xl font-bold mb-4">Acting</h2>
-              <div className="flex overflow-x-scroll space-x-4">
-                {credits.cast.map((role) => (
-                  <Link
-                    key={role.id}
-                    href={role.media_type === 'movie' ? `/movies/${role.id}` : `/tv/${role.id}`}
-                  >
-                    <div className="min-w-[150px] cursor-pointer">
-                      <Image
-                        src={`https://image.tmdb.org/t/p/w200${role.poster_path}`}
-                        alt={role.title || role.name}
-                        width={150}
-                        height={225}
-                        className="rounded-lg"
-                      />
-                      <p className="mt-2 text-center">{role.title || role.name}</p>
-                      <p className="text-center text-gray-400 text-sm">
-                        {getGenresForRole(role)}
-                      </p> {/* عرض الأنواع */}
-                    </div>
-                  </Link>
-                ))}
-              </div>
+              {/* استخدم المكون ScrollableMovieList هنا لعرض الأفلام والمسلسلات */}
+              <ScrollableMovieList
+                content={credits.cast} 
+                isLoggedIn={true} 
+                toggleDropdown={() => {}} 
+                dropdownVisible={null} 
+              />
             </div>
 
           </div>

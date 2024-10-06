@@ -159,6 +159,27 @@ const Navbar = () => {
                     {user.email}
                   </p>
                 </div>
+
+                {/* إضافة روابط القوائم */}
+                <div className="p-3 border-t dark:border-gray-700">
+                <Link href="/Lists" passHref>
+                    <div className="block text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 px-4 py-2 text-sm cursor-pointer">
+                      {t('Lists')}
+                    </div>
+                  </Link>
+                  <Link href="/Favorite" passHref>
+                    <div className="block text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 px-4 py-2 text-sm cursor-pointer">
+                      {t('Favorites')}
+                    </div>
+                  </Link>
+                  <Link href="/Watchlist" passHref>
+                    <div className="block text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 px-4 py-2 text-sm cursor-pointer">
+                      {t('Watchlist')}
+                    </div>
+                  </Link>
+                </div>
+
+                {/* زر تسجيل الخروج */}
                 <div className="p-3 border-t dark:border-gray-700">
                   <button onClick={handleSignOut} className="w-full text-left text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 px-4 py-2 text-sm">
                     {t('Log Out')}
@@ -166,6 +187,7 @@ const Navbar = () => {
                 </div>
               </div>
             )}
+
           </>
         )}
 
